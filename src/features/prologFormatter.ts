@@ -106,7 +106,7 @@ export class PrologFormatter implements DocumentFormattingEditProvider{
     clauseComment = clauseComment.replace(head,"")
     head = array[0][1];
     //CONDENSATE
-    regexp = /(?<!\sis)\s(?!is\s)/gm;
+    regexp = /(?<!\sis)\s(?!is\s|:-)/gm;
     array = [...clauseComment.matchAll(regexp)];
     offset =0
     array.forEach(space=>{
