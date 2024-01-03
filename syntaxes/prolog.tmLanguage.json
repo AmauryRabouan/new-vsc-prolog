@@ -91,7 +91,7 @@
           "name": "punctuation.definition.parameters.begin"
         }
       },
-      "end": "(;|\\.\\s*)",
+      "end": "(;|\\.\\s*|:-)",
       "endCaptures": {
         "1": {
           "name": "keyword.control.clause.bodybegin.prolog"
