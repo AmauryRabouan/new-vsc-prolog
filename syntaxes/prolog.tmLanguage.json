@@ -81,6 +81,38 @@
       ]
     },
     {
+      "name": "meta.clause.head.pita.ground.prolog",
+      "begin": "^\\s*([a-z][a-zA-Z0-9_]*)(:)(?=[0-9\\s]*\\.[0-9\\s]*)",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.name.function.clause.head.pita.ground.prolog"
+        },
+        "2": {
+          "name": "punctuation.definition.parameters.begin"
+        }
+      },
+      "end": "\\s*(\\.$)",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.control.clause.bodybegin.prolog"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#builtin"
+        },
+        {
+          "include": "#atom"
+        },
+        {
+          "include": "#variable"
+        },
+        {
+          "include": "#constants"
+        }
+      ]
+    },
+    {
       "name": "meta.clause.head.prolog",
       "begin": "^\\s*([a-z][a-zA-Z0-9_]*)(\\(?)(?=.*(:-|=>).*)",
       "beginCaptures": {
