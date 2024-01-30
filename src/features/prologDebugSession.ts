@@ -1,3 +1,4 @@
+
 import {
   DebugSession,
   ErrorDestination,
@@ -105,7 +106,7 @@ export class PrologDebugSession extends DebugSession {
         `(${frame.level})${frame.name}`,
         new Source(
           path.basename(frame.file),
-          this.convertDebuggerPathToClient(frame.file)
+          frame.file
         ),
         this.convertDebuggerLineToClient(frame.line),
         this.convertDebuggerColumnToClient(frame.column)
@@ -124,7 +125,6 @@ export class PrologDebugSession extends DebugSession {
     request?: DebugProtocol.Request
   ) {
     let richArgs = args as LaunchRequestArguments;
-    // window.showInformationMessage("hello");
     this._startupQuery = richArgs.startupQuery || "start";
     this._startFile = path.resolve(richArgs.program);
     this._cwd = richArgs.cwd;
@@ -147,6 +147,8 @@ export class PrologDebugSession extends DebugSession {
     );
     this.sendResponse(response);
     this.sendEvent(new InitializedEvent());
+   
+
   }
   protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
     response.body = {
@@ -189,6 +191,7 @@ export class PrologDebugSession extends DebugSession {
     if (!this._stopOnEntry) {
       this._prologDebugger.query(`cmd:${this._traceCmds.continue[1]}\n`);
     }
+    this._prologDebugger.query(`cmd:${this._traceCmds.stepinto[1]}\n`);
     this._debugging = true;
   }
 

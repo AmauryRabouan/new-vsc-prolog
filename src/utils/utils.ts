@@ -54,13 +54,13 @@ export class Utils {
     }
     return "";
   }
-
+  // initialisation of utils class and load snippets file with it's predicates
   public static init(context: ExtensionContext) {
     Utils.CONTEXT = context;
     Utils.loadSnippets(context);
     Utils.genPredicateModules(context);
   }
-
+  // load the snippets from file
   private static loadSnippets(context: ExtensionContext) {
     if (Utils.snippets) {
       return;
@@ -69,14 +69,14 @@ export class Utils {
     let snippets = fs.readFileSync(snippetsPath, "utf8").toString();
     Utils.snippets = JSON.parse(snippets);
   }
-
+  // initialise module for predicates from the loaded snippets
   public static genPredicateModules(context: ExtensionContext) {
     Utils.predModules = <IPredModule>new Object();
     let pred, mod: string;
-    for (let p in Utils.snippets) {
+    for (let p in Utils.snippets) { // from the loaded snippets
       if (p.indexOf(":") > 0) {
         [mod, pred] = p.split(":");
-        if (Utils.predModules[pred]) {
+        if (Utils.predModules[pred]) { // if predicates have severals modules
           Utils.predModules[pred] = Utils.predModules[pred].concat(mod);
         } else {
           Utils.predModules[pred] = [mod];
@@ -84,12 +84,12 @@ export class Utils {
       }
     }
   }
-
+  // return the module of a specified predicate
   public static getPredModules(pred1: string): string[] {
     let pred = pred1.indexOf(":") > -1 ? pred1.split(":")[1] : pred1;
     return Utils.predModules[pred] ? Utils.predModules[pred] : [];
   }
-
+  // get all the builtin predicates names from the loaded snippet
   public static getBuiltinNames(): string[] {
     let builtins: string[] = Object.getOwnPropertyNames(Utils.snippets);
     builtins = builtins.filter(name => {
@@ -104,34 +104,38 @@ export class Utils {
     return builtins;
   }
 
+  // get the predicate under the cursor
   public static getPredicateUnderCursor(
     doc: TextDocument,
     position: Position
   ): IPredicate {
+    // get predicate name range
     let wordRange: Range = doc.getWordRangeAtPosition(position);
     if (!wordRange) {
       return null;
     }
+    // get predicate name
     let predName: string = doc.getText(wordRange);
     let re = new RegExp("^" + predName + "\\s*\\(");
     let re1 = new RegExp("^" + predName + "\\s*\\/\\s*(\\d+)");
     let wholePred: string;
     let arity: number;
     let params: string;
-    const docTxt = doc.getText();
+    const docTxt = doc.getText(); // get the entire text of the prolog file
     let text = docTxt
       .split("\n")
-      .slice(position.line)
+      .slice(position.line)// get juste the line of the predicate
       .join("")
       .slice(wordRange.start.character)
-      .replace(/\s+/g, " ");
+      .replace(/\s+/g, " "); // replace all whitespaces by space
 
     let module = null;
 
     if (re.test(text)) {
-      let i = text.indexOf("(") + 1;
+      let i = text.indexOf("(") + 1;// get the position of the first parenthesis
       let matched = 1;
-      while (matched > 0) {
+      // iteration if parenthesis in parenthesis
+      while (matched > 0) { 
         if (text.charAt(i) === "(") {
           matched++;
           i++;
@@ -142,10 +146,10 @@ export class Utils {
           i++;
           continue;
         }
-        i++;
+        i++;// index of the last parenthesis
       }
-      wholePred = text.slice(0, i);
-      arity = Utils.getPredicateArity(wholePred);
+      wholePred = text.slice(0, i); // get the whole predicate
+      arity = Utils.getPredicateArity(wholePred); // get the number of parameters
       params = wholePred.slice(predName.length);
       // find the module if a predicate is picked in :-module or :-use_module
     } else if (re1.test(text)) {
@@ -208,9 +212,10 @@ export class Utils {
       params = "";
       wholePred = predName;
     }
-
+    //get module doesnt work and useless
+    /*
     const fileName = jsesc(window.activeTextEditor.document.fileName);
-    /*if (!module) {
+    if (!module) {
       let modMatch = docTxt
         .slice(0, doc.offsetAt(wordRange.start))
         .match(/([\S]+)\s*:\s*$/);
@@ -278,15 +283,15 @@ export class Utils {
       module: module
     };
   }
-
+  // get the number of parameters
   public static getPredicateArity(pred: string): number {
     let re = /^\w+\((.+)\)$/;
-    if (!re.test(pred)) {
+    if (!re.test(pred)) { // if predicate have parameters
       return 0;
     }
     let args = [],
       plCode: string;
-
+    // get the Arity from prolog
     switch (Utils.DIALECT) {
       case "swi":
         args = ["-f", "none", "-q"];
@@ -308,27 +313,29 @@ export class Utils {
       default:
         break;
     }
-    let result = Utils.execPrologSync(
+    let result = Utils.execPrologSync( // execute a prolog query 
       args,
       plCode,
       "outputArity",
       pred,
       /arity=(\d+)/
     );
-    return result ? parseInt(result[1]) : -1;
+    return result ? parseInt(result[1]) : -1; // return the number of parameters
   }
 
+  // execute a prolog query 
   public static execPrologSync(
     args: string[],
     clause: string,
-    call: string,
-    inputTerm: string,
+    call: string, // goal to call
+    inputTerm: string, // input
     resultReg: RegExp
   ): string[] {
-    let plCode = jsesc(clause, { quotes: "double" });
+    let plCode = jsesc(clause, { quotes: "double" }); // stringify 
     let input: string,
       prologProcess: cp.SpawnSyncReturns<string | Buffer>,
       runOptions: cp.SpawnSyncOptions;
+    // execute the query by transforming it in a stream
     switch (Utils.DIALECT) {
       case "swi":
         input = `
@@ -339,11 +346,11 @@ export class Utils {
           halt.
         `;
         runOptions = {
-          cwd: workspace.workspaceFolders[0].uri.fsPath,
+          cwd: workspace.workspaceFolders[0].uri.fsPath, // rootpath of the project
           encoding: "utf8",
           input: input
         };
-        prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);
+        prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions); // create a subprocess with prolog (specified runtimepath)
         break;
       case "ecl":
         input = `${inputTerm}.`;
@@ -354,30 +361,30 @@ export class Utils {
           }\n\"), read, S),compile(stream(S)),close(S),call(${call}).`
         ]);
         runOptions = {
-          cwd: workspace.workspaceFolders[0].uri.fsPath,
+          cwd: workspace.workspaceFolders[0].uri.fsPath,// rootpath of the project
           encoding: "utf8",
           input: input
         };
-        prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);
+        prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);// create a subprocess with prolog (specified runtimepath)
         break;
       default:
         break;
     }
-
+    // get the response in output
     if (prologProcess.status === 0) {
-      let output = prologProcess.stdout.toString();
+      let output = prologProcess.stdout.toString(); // get output with stdout
       let err = prologProcess.stderr.toString();
       // console.log("out:" + output);
       // console.log("err:" + err);
 
-      let match = output.match(resultReg);
+      let match = output.match(resultReg); // select the wanted result with the regex expression 
       return match ? match : null;
     } else {
       console.log("UtilsExecSyncError: " + prologProcess.stderr.toString());
       return null;
     }
   }
-
+  //Update the builtin predicates in the SyntaxFile from the snipet file | Not use
   public static insertBuiltinsToSyntaxFile(context: ExtensionContext) {
     let syntaxFile = path.resolve(
       context.extensionPath + "/syntaxes/prolog.tmLanguage.yaml"
@@ -391,7 +398,7 @@ export class Utils {
       });
     });
   }
-
+/* //OLD
   public static isValidEclTerm(docText: string, str: string): boolean {
     if (Utils.DIALECT !== "ecl") {
       return false;
@@ -407,7 +414,7 @@ export class Utils {
           `;
     let runOptions: cp.SpawnSyncOptions;
     runOptions = {
-      cwd: workspace.rootPath,
+      cwd: workspace.workspaceFolders[0].uri.fsPath,
       encoding: "utf8",
       input: goals
     };
@@ -420,5 +427,5 @@ export class Utils {
     } else {
       return false;
     }
-  }
+  }*/
 }

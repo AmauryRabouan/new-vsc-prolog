@@ -21,7 +21,6 @@ import { loadEditHelpers } from "./features/editHelpers";
 import { Utils } from "./utils/utils";
 import PrologHoverProvider from "./features/hoverProvider";
 import PrologDocumentHighlightProvider from "./features/documentHighlightProvider";
-import PrologDocumentFormatter from "./features/formattingEditProvider";
 import { SnippetUpdater ,SnippetUpdaterController, PrologCompletionProvider} from "./features/updateSnippets";
 import {PrologFormatter} from "./features/prologFormatter";
 import { PrologDefinitionProvider } from "./features/definitionProvider";
@@ -32,7 +31,9 @@ import { ensureSymlink, remove } from "fs-extra-plus";
 import jsesc from "jsesc";
 import * as fs from "fs";
 
+// initialisation of workspace
 async function initForDialect(context: ExtensionContext) {
+  // get the user preferences for the extention
   const section = workspace.getConfiguration("prolog");
   const dialect = section.get<string>("dialect");
   const exec = section.get<string>("executablePath", "swipl");
@@ -42,12 +43,14 @@ async function initForDialect(context: ExtensionContext) {
   Utils.RUNTIMEPATH = jsesc(exec);
   const exPath = jsesc(context.extensionPath);
   Utils.EXPATH = exPath;
+  // check if the dialect links have already been done
   const diaFile = path.resolve(`${exPath}/.vscode`) + "/dialect.json";
   const lastDialect = JSON.parse(fs.readFileSync(diaFile).toString()).dialect;
   if (lastDialect === dialect) {
     return;
   }
 
+  // creating links for the right dialect 
   const symLinks = [
     {
       path: path.resolve(`${exPath}/syntaxes`),
@@ -62,32 +65,40 @@ async function initForDialect(context: ExtensionContext) {
   ];
   await Promise.all(
     symLinks.map(async link => {
+      // remove old link
       await remove(path.resolve(`${link.path}/${link.targetFile}`));
+      // make link
       try {
         return await ensureSymlink(
           path.resolve(`${link.path}/${link.srcFile}`),
           path.resolve(`${link.path}/${link.targetFile}`)
         );
+      // if not succed you shoud try to run vsc in administator role
       } catch (err) {
         window.showErrorMessage("VSC-Prolog failed in initialization. Try to run vscode in administrator role.");
         throw (err);
       }
     })
   );
+  // write the dialect to the json for later initialisation
   fs.writeFileSync(diaFile, JSON.stringify({ dialect: dialect }));
 }
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: ExtensionContext) {
   console.log('Congratulations, your extension "vsc-prolog" is now active!');
+
+  // initialisation of workspace
   await initForDialect(context);
 
+  // filter the files to process
   const PROLOG_MODE: DocumentFilter = { language: "prolog", scheme: "file" };
 
+  // initialisation of utils class and load snippets file with it's predicates
   Utils.init(context);
-
+  // automatic indent on change
   loadEditHelpers(context.subscriptions);
-
+  // extention special commands
   let myCommands = [
     {
       command: "prolog.load.document",
@@ -149,28 +160,7 @@ export async function activate(context: ExtensionContext) {
       new PrologDocumentHighlightProvider()
     )
   );
-  if (process.platform !== "win32" && Utils.FORMATENABLED) {
-    context.subscriptions.push(
-      languages.registerDocumentRangeFormattingEditProvider(
-        PROLOG_MODE,
-        new PrologDocumentFormatter()
-      )
-    );
-    context.subscriptions.push(
-      languages.registerOnTypeFormattingEditProvider(
-        PROLOG_MODE,
-        new PrologDocumentFormatter(),
-        ".",
-        "\n"
-      )
-    );
-    context.subscriptions.push(
-      languages.registerDocumentFormattingEditProvider(
-        PROLOG_MODE,
-        new PrologDocumentFormatter()
-      )
-    );
-  }
+
   context.subscriptions.push(
     languages.registerDefinitionProvider(
       PROLOG_MODE,
@@ -184,9 +174,9 @@ export async function activate(context: ExtensionContext) {
     )
   );
   context.subscriptions.push(PrologTerminal.init());
-  // context.subscriptions.push(prologDebugger);
 
-  // Add to a list of disposables which are disposed when this extension is deactivated.
+
+
   let snippetUpdater = new SnippetUpdater();
   context.subscriptions.push(new SnippetUpdaterController(snippetUpdater));
   context.subscriptions.push(snippetUpdater);

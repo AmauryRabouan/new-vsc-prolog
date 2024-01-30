@@ -12,7 +12,7 @@ import {
   window,
   workspace
 } from "vscode";
-
+// automatic indentation on change
 export function loadEditHelpers(subscriptions: Disposable[]) {
   subscriptions.push(
     languages.setLanguageConfiguration("prolog", {
@@ -75,6 +75,8 @@ export function loadEditHelpers(subscriptions: Disposable[]) {
     })
   );
 
+  // USELESS
+  /*
   function getPreviousClauseHead(doc: TextDocument, line: number): string {
     if (line <= 0) {
       return "";
@@ -191,5 +193,5 @@ export function loadEditHelpers(subscriptions: Disposable[]) {
     },
     null,
     subscriptions
-  );
+  );*/
 }
