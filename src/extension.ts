@@ -23,7 +23,7 @@ import PrologHoverProvider from "./features/hoverProvider";
 import PrologDocumentHighlightProvider from "./features/documentHighlightProvider";
 import { SnippetUpdater ,SnippetUpdaterController, PrologCompletionProvider} from "./features/updateSnippets";
 import {PrologFormatter} from "./features/prologFormatter";
-import {PrologDebugger,LaunchRequestArguments,} from "./features/prologDebugger";
+import {PrologDebugger} from "./features/prologDebugger";
 import { PrologDefinitionProvider } from "./features/definitionProvider";
 import { PrologReferenceProvider } from "./features/referenceProvider";
 import PrologLinter from "./features/prologLinter";
@@ -175,7 +175,7 @@ export async function activate(context: ExtensionContext) {
     )
   );
   context.subscriptions.push(PrologTerminal.init());
-
+  PrologDebugger;
 
   let snippetUpdater = new SnippetUpdater();
   context.subscriptions.push(new SnippetUpdaterController(snippetUpdater));

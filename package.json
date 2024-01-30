@@ -2,7 +2,7 @@
     "name": "new-vsc-prolog",
     "displayName": "New-VSC-Prolog",
     "description": "Support for Prolog language",
-    "version": "1.0.25",
+    "version": "1.0.26",
     "publisher": "AmauryRabouan",
     "icon": "images/vsplogo.png",
     "license": "MIT",
@@ -46,7 +46,7 @@
     "bugs": {
         "url": "https://github.com/AmauryRabouan/vsc-prolog-1/issues"
     },
-    "main": "./out/pub/extension",
+    "main": "./out/pub/main.js",
     "activationEvents": [
         "onLanguage:prolog"
     ],
@@ -348,7 +348,7 @@
     "scripts": {
         "vscode:prepublish": "npm run esbuild-base -- --minify",
         "lint": "eslint src --ext ts",
-        "esbuild-base": "esbuild ./src/extension.ts ./src/features/prologDebugger.ts --bundle --outdir=out/pub/ --tsconfig=./tsconfig.json --external:vscode --format=cjs --platform=node",
+        "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/pub/main.js --tsconfig=./tsconfig.json --external:vscode --format=cjs --platform=node",
         "esbuild": "npm run -S esbuild-base -- --sourcemap",
         "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
         "compile": "tsc -watch -p ./",
