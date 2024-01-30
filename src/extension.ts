@@ -23,6 +23,7 @@ import PrologHoverProvider from "./features/hoverProvider";
 import PrologDocumentHighlightProvider from "./features/documentHighlightProvider";
 import { SnippetUpdater ,SnippetUpdaterController, PrologCompletionProvider} from "./features/updateSnippets";
 import {PrologFormatter} from "./features/prologFormatter";
+import {PrologDebugger,LaunchRequestArguments,} from "./features/prologDebugger";
 import { PrologDefinitionProvider } from "./features/definitionProvider";
 import { PrologReferenceProvider } from "./features/referenceProvider";
 import PrologLinter from "./features/prologLinter";
@@ -86,7 +87,7 @@ async function initForDialect(context: ExtensionContext) {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: ExtensionContext) {
-  console.log('Congratulations, your extension "vsc-prolog" is now active!');
+  console.log('Congratulations, your extension "vsc-prolog" is now active! :)');
 
   // initialisation of workspace
   await initForDialect(context);
@@ -174,7 +175,6 @@ export async function activate(context: ExtensionContext) {
     )
   );
   context.subscriptions.push(PrologTerminal.init());
-
 
 
   let snippetUpdater = new SnippetUpdater();

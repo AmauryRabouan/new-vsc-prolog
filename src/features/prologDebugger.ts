@@ -292,4 +292,5 @@ export class PrologDebugger extends EventEmitter {
   public dispose(): void {
     this.killPrologProc();
   }
+  
 }
