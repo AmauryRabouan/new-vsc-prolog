@@ -2,7 +2,7 @@
     "name": "new-vsc-prolog",
     "displayName": "New-VSC-Prolog",
     "description": "Support for Prolog language",
-    "version": "1.0.27",
+    "version": "1.0.28",
     "publisher": "AmauryRabouan",
     "icon": "images/vsplogo.png",
     "license": "MIT",

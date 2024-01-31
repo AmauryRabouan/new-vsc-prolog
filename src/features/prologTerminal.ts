@@ -17,7 +17,7 @@ export default class PrologTerminal {
   private static _document: TextDocument;
 
   constructor() {}
-
+  // Initialize the Prolog terminal
   public static init(): Disposable {
     return (<any>window).onDidCloseTerminal(terminal => {
       PrologTerminal._terminal = null;
@@ -25,17 +25,19 @@ export default class PrologTerminal {
     });
   }
 
-  // run swipl on a visual terminal
+  // Create a Prolog terminal instance
   private static createPrologTerm() {
     if (PrologTerminal._terminal) {
       return;
     }
-
+    // Retrieve configuration settings for Prolog
     let section = workspace.getConfiguration("prolog");
     let title = "Prolog";
+    // Check if the configuration section is available
     if (section) {
       let executable = section.get<string>("executablePath", "swipl");
       let args = section.get<string[]>("terminal.runtimeArgs");
+      // Create a new terminal instance
       PrologTerminal._terminal = (<any>window).createTerminal(
         title,
         executable,
@@ -45,7 +47,7 @@ export default class PrologTerminal {
       throw new Error("configuration settings error: prolog");
     }
   }
-  // send text to the terminal
+  // Send a string to the Prolog terminal
   public static sendString(text: string) {
     PrologTerminal.createPrologTerm();
     // finish goal by .
@@ -57,11 +59,11 @@ export default class PrologTerminal {
   }
   // load the prolog file
   public static loadDocument() {
-    PrologTerminal._document = window.activeTextEditor.document;
-    PrologTerminal.createPrologTerm();
-    // get the file name
+    PrologTerminal._document = window.activeTextEditor.document;// Get the active Prolog document
+    PrologTerminal.createPrologTerm();// Create the Prolog terminal
+    // Get the file name and escape it using jsesc
     let fname = jsesc(PrologTerminal._document.fileName, { quotes: "single" });
-    let goals = `['${fname}']`;
+    let goals = `['${fname}']`;// Define the goals to load the Prolog file
     // load the file into swipl with a goal
     if (PrologTerminal._document.isDirty) {
       PrologTerminal._document.save().then(_ => {
@@ -73,16 +75,17 @@ export default class PrologTerminal {
   }
   // query the goal under the cursor command
   public static queryGoalUnderCursor() {
+    // Get the active text editor and document
     let editor: TextEditor = window.activeTextEditor;
     let doc: TextDocument = editor.document;
-    let pred = Utils.getPredicateUnderCursor(doc, editor.selection.active);
+    let pred = Utils.getPredicateUnderCursor(doc, editor.selection.active);// Get the predicate under the cursor using utility function
     // if no predicate under cursor
     if (!pred) {
       return;
     }
-    PrologTerminal.loadDocument();
-    let goal = pred.wholePred;
-    // separate the module
+    PrologTerminal.loadDocument();// Load the current Prolog document into the Prolog terminal
+    let goal = pred.wholePred;// Extract the goal from the predicate
+    // Separate the module if present
     if (goal.indexOf(":") > -1) {
       goal = goal.split(":")[1];
     }

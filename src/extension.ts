@@ -120,11 +120,12 @@ export async function activate(context: ExtensionContext) {
       }
     }
   ];
-
+  // error detection and possible patch
   let linter: PrologLinter;
   if (Utils.LINTERTRIGGER !== "never") {
     linter = new PrologLinter(context);
     linter.activate();
+    // extention special commands for linter
     myCommands = myCommands.concat([
       {
         command: "prolog.linter.nextErrLine",
@@ -140,64 +141,63 @@ export async function activate(context: ExtensionContext) {
       }
     ]);
   }
-
+  // register commands
   myCommands.map(command => {
     context.subscriptions.push(
       commands.registerCommand(command.command, command.callback)
     );
   });
-
+  // if linter is not prohibited by the user
   if (Utils.LINTERTRIGGER !== "never") {
     context.subscriptions.push(
       languages.registerCodeActionsProvider(PROLOG_MODE, linter)
     );
   }
+  // Hover provider
   context.subscriptions.push(
     languages.registerHoverProvider(PROLOG_MODE, new PrologHoverProvider())
   );
+  //Highlight provider
   context.subscriptions.push(
     languages.registerDocumentHighlightProvider(
       PROLOG_MODE,
       new PrologDocumentHighlightProvider()
     )
   );
-
+  // Definition provider (go to definition command)
   context.subscriptions.push(
     languages.registerDefinitionProvider(
       PROLOG_MODE,
       new PrologDefinitionProvider()
     )
   );
+  // Reference provider (find all references command)
   context.subscriptions.push(
     languages.registerReferenceProvider(
       PROLOG_MODE,
       new PrologReferenceProvider()
     )
   );
+  // create prolog terminal (load file command)
   context.subscriptions.push(PrologTerminal.init());
-  PrologDebugger;
+  //PrologDebugger;
 
+  // add created predicate to the snippet
   let snippetUpdater = new SnippetUpdater();
   context.subscriptions.push(new SnippetUpdaterController(snippetUpdater));
   context.subscriptions.push(snippetUpdater);
 
-
+  // auto completion provider
   context.subscriptions.push(
     languages.registerCompletionItemProvider(PROLOG_MODE,new PrologCompletionProvider())
   );
-
+  
+  // file formating provider
   context.subscriptions.push(
     languages.registerDocumentFormattingEditProvider(PROLOG_MODE, new PrologFormatter())
   );
 
 }
-
-
-
-
-
-
-
 
 
 // this method is called when your extension is deactivated

@@ -19,23 +19,24 @@ import { Utils} from "../utils/utils";
 
 
 
-
+// Class responsible for updating snippets based on prolog files
 export class SnippetUpdater {
+
+  // Update snippets based on new predicates create by the user in the document
   public updateSnippet() {
-
-      // Create as needed 
-
-      // Get the current text editor 
+      // Get the currently active text editor
       let editor = window.activeTextEditor; 
       if (!editor) { 
           return; 
       } 
 
       let doc = editor.document; 
-      // Only update status if an prolog file 
+      // Update only if the document is a prolog file
       if (doc.languageId === "prolog") { 
+        // Retrieve predicates from the document and check against existing snippets
         var predicats = this._getPredicat(doc); 
         var already = [];
+        // Extract existing snippets' names for comparison
         Object.keys(Utils.snippets).forEach((elem)=>{
           if(elem.includes(":")){
             if(elem.includes(":-")){
@@ -47,6 +48,7 @@ export class SnippetUpdater {
             already.push(elem);
           }
         });
+        // Update snippets based on new predicates in the document
         predicats.forEach((elem)=>{
           let num = elem[1].split(",").length
           if(!already.includes(elem[0]+"/"+num.toString())){
@@ -56,25 +58,31 @@ export class SnippetUpdater {
             Utils.newsnippets.push(elem);
           }
         });
+        // Generate predicate modules based on the updated context
         Utils.genPredicateModules(Utils.CONTEXT);
       }
   } 
 
+  // Extracts predicates from the given TextDocument
   public _getPredicat(doc: TextDocument)  { 
-
-      let docContent = doc.getText(); 
-      const regexp = /^\s*([a-z][a-zA-Z0-9_]*)\(([a-zA-Z0-9_\-, ]*)\)(?=.*(:-|=>|-->).*)/gm;
-      const regexpModule = /^\s*:-\s*use_module\(([a-z][a-zA-Z0-9_\/]*)\s*(,|\)\s*\.)/gm;
-      const arrayModule = [...docContent.matchAll(regexpModule)]
-      const prolog = doc.fileName.split(".")[1]
+      let docContent = doc.getText(); // Get the content of the document
+      const regexp = /^\s*([a-z][a-zA-Z0-9_]*)\(([a-zA-Z0-9_\-, ]*)\)(?=.*(:-|=>|-->).*)/gm;// Regular expression for matching Prolog predicates
+      const regexpModule = /^\s*:-\s*use_module\(([a-z][a-zA-Z0-9_\/]*)\s*(,|\)\s*\.)/gm;// Regular expression for matching Prolog use_module directives
+      const arrayModule = [...docContent.matchAll(regexpModule)]// Extract all use_module directives from the document
+      const prolog = doc.fileName.split(".")[1]// Get the Prolog extension from the document's file name
       var predicats = [];
+      // Loop through each use_module directive
       for(let i = 0 ; i < arrayModule.length;i++){
+        // Read the content of the referenced module
           var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+arrayModule[i][1]+"."+prolog, 'utf8');
+           // Extract predicates from the referenced module's content
           const array2 = [...text.matchAll(regexp)]
           predicats = predicats.concat(array2.map(function(value) { return [value[1],value[2]]; }));
       }
+      // Extract predicates from the current document
       const array = [...docContent.matchAll(regexp)]
       predicats = predicats.concat(array.map(function(value) { return [value[1],value[2]]; }));
+      // Filter out a specific predicate named "test"
       predicats = predicats.filter(function (predicat) {return predicat[0]!= "test"});
       return predicats; 
   } 
@@ -82,6 +90,7 @@ export class SnippetUpdater {
   }
 }
 
+// Class responsible for managing the SnippetUpdater and subscribing to relevant events
 export class SnippetUpdaterController {
 
   private snippetUpdater: SnippetUpdater;
@@ -89,7 +98,7 @@ export class SnippetUpdaterController {
 
   constructor(snippetUpdater: SnippetUpdater) {
       this.snippetUpdater = snippetUpdater;
-      this.snippetUpdater.updateSnippet();
+      this.snippetUpdater.updateSnippet(); // Update snippets initially
 
       // subscribe to selection change and editor activation events
       let subscriptions: Disposable[] = [];
@@ -114,11 +123,16 @@ export class SnippetUpdaterController {
 
 
 export  class PrologCompletionProvider {
+
+  // Provides completion items for Prolog code (auto completion)
   public provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext) {
+    // Array to store completion items
     var snippetCompletion = [];
+    // Iterate through new snippets and create completion items
     Utils.newsnippets.forEach((elem)=>{
-      const params= elem[1].split(",");
-      const completionItem = new CompletionItem(elem[0]+"/"+params.length,CompletionItemKind.Function);
+      const params= elem[1].split(","); // Split parameters of the snippet
+      const completionItem = new CompletionItem(elem[0]+"/"+params.length,CompletionItemKind.Function);// Create a new CompletionItem for each snippet
+      // Construct the snippet text with placeholders for parameters
       let str = elem[0].toString()+"(";
       let str2 =""
       for(let i =0 ; i<params.length ;i++){
@@ -130,20 +144,16 @@ export  class PrologCompletionProvider {
         }
       }
       str = str+")$0";
-      
+      // Set the insert text for the completion item as a SnippetString
       completionItem.insertText = new SnippetString(str);
-      //const docs: any = new MarkdownString( '<span style="color:#de190b;">yes</span>'+elem[0].toString()+"("+elem[1].toString()+")\n custom predicate\n\n");
+      // Set documentation for the completion item
       const docs: any = new MarkdownString();
       docs.supportHtml = true;
       docs.appendMarkdown('<span style="color:#8da9fc;">'+elem[0].toString()+'</span>('+str2+')</br>Custom predicate');
       completionItem.documentation = docs;
-      completionItem.detail = elem[0]+"/"+params.length;
-      snippetCompletion.push(completionItem);
+      completionItem.detail = elem[0]+"/"+params.length;// Set additional details for the completion item
+      snippetCompletion.push(completionItem);// Add the completion item to the array
     });
-    /*snippetCompletion.insertText = new SnippetString('Good ${1|morning,afternoon,evening|}. It is ${1}, right?');
-    const docs: any = new MarkdownString("Inserts a snippet that lets you select [link](x.ts).");
-    snippetCompletion.documentation = docs;
-    docs.baseUri = Uri.parse('http://example.com/a/b/c/');*/
-    return snippetCompletion ;
+    return snippetCompletion ;// Return the array of completion items
   }
 }
