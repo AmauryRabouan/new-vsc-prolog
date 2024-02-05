@@ -16,25 +16,6 @@ OutputChannel,
 window
 }
 from 'vscode';
-import { Utils} from "../utils/utils";
-import { close } from 'fs';
-import { off } from 'process';
-
-interface IComment {
-  location: number; // character location in the range
-  comment: string;
-}
-
-interface ITermInfo {
-  startLine: number;
-  startChar: number;
-  isValid: boolean;
-  termStr: string;
-  comments: IComment[];
-  endLine?: number;
-  endChar?: number;
-  charsSofar?: number;
-}
 
 export class PrologFormatter implements DocumentFormattingEditProvider{
   private _section: WorkspaceConfiguration;
@@ -45,7 +26,6 @@ export class PrologFormatter implements DocumentFormattingEditProvider{
   private _args: string[];
   private _outputChannel: OutputChannel;
   private _textEdits: TextEdit[] = [];
-  private _currentTermInfo: ITermInfo = null;
   private _startChars: number;
 
   // Constructor for the PrologFormatter class

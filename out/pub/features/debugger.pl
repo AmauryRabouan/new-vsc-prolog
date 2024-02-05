@@ -10,6 +10,8 @@
 
 :- use_module(library(http/json)).
 
+% Initializing values
+
 :- (initialization init).
 
 init :-
@@ -23,6 +25,12 @@ gen_frame_id(Id) :-
     NewId is Id+1,
     nb_setval(frame_id, NewId).
 
+/*
+* load_source_file(File)
+*
+* Loads a source file by generating predicates for their line-by-line retrieval. See setup_file_lines_chars/1.
+*/
+
 load_source_file(File) :-
     file_lines_computed(File), !.
 load_source_file(File) :-
@@ -30,6 +38,17 @@ load_source_file(File) :-
     ;   load_files(File, [module(user)])
     ),
     setup_file_lines_chars(File).
+
+convert_to_dicts([JH|JT], [DH|DT]) :-
+    dict_json(DH, JH),
+    convert_to_dicts(JT, DT).
+convert_to_dicts([], []).
+
+clear_breakpoints(File) :-
+    breakpoint_property(Id, file(File)),
+    delete_breakpoint(Id),
+    fail.
+clear_breakpoints(_).
 
 set_breakpoints(SourceFile1, BPs) :-
     nb_setval(breakpoints, _{}),
@@ -45,26 +64,7 @@ set_breakpoints(SourceFile1, BPs) :-
     dict_json(Response, ResStr),
     format('~n~w~n', ResStr).
 
-convert_to_dicts([JH|JT], [DH|DT]) :-
-    dict_json(DH, JH),
-    convert_to_dicts(JT, DT).
-convert_to_dicts([], []).
-
-clear_breakpoints(File) :-
-    breakpoint_property(Id, file(File)),
-    delete_breakpoint(Id),
-    fail.
-clear_breakpoints(_).
-
-set_breakpoints(File,
-                            [BPDict|T],
-                            
-                            [ _{ line:BPDict.line,
-                                 source:File,
-                                 verified:Verified
-                               }
-                            | VT
-                            ]) :-
+set_breakpoints(File, [BPDict|T],  [ _{ line:BPDict.line, source:File, verified:Verified}| VT]) :-
     dict_keys(BPDict, BpKeys),
     (   memberchk(column, BpKeys)
     ->  Col is BPDict.column
@@ -89,6 +89,12 @@ add_to_dict(Id, BpKeys, File, BPDict) :-
     dict_create(DOut, _, [Id:NNBPD]),
     nb_setval(breakpoints, DOut).
 
+/*
+* spy_predicates(+Preds)
+*
+* Prints all predicates in list Preds along with an indication to say whether they are being spied or not.
+*/
+
 spy_predicates(Preds) :-
     nospyall,
     spy_predicates(Preds, Verified),
@@ -96,11 +102,7 @@ spy_predicates(Preds) :-
     dict_json(Response, ResStr),
     format('~n~w~n', ResStr).
 
-spy_predicates([Pred|T],
-                           
-                           [ _{message:PredA, verified:Verified}
-                           | VT
-                           ]) :-
+spy_predicates([Pred|T],[ _{message:PredA, verified:Verified}| VT]) :-
     term_to_atom(Pred, PredA),
     catch((   spy(Pred)
           ->  Verified=true
@@ -110,6 +112,14 @@ spy_predicates([Pred|T],
           Verified=false),
     spy_predicates(T, VT).
 spy_predicates([], []).
+
+/*
+* startup(+StartGoal : goal)
+*
+* Configures the Prolog environment to call the given goal.
+*
+* @param StartGoal : The goal that is to be called.
+*/
 
 startup(StartGoal) :-
     leash(-exit),
@@ -121,12 +131,19 @@ startup(StartGoal) :-
     call(GStart),
     notrace.
 
+/*
+* prolog_trace_interception(+Port, +Frame, +Choice, -Action)
+* 
+* This modification of the user predicate prolog_trace_interception allows for handling breakpoints.
+*/
+
 user:prolog_trace_interception(_, Frame, _, Action) :-
     prolog_frame_attribute(Frame, goal, Goal),
     (   locate_source(Frame)
     ;   output_clause_location(Goal, Frame)
     ),
-    check_breakpoint(Action). 
+    check_breakpoint(Action).
+
 check_breakpoint(continue) :-
     nb_getval(frame, FrDict),
     nb_getval(breakpoints, BpDict),
@@ -166,10 +183,29 @@ arguments(Frame, N, [Val|T]) :-
     arguments(Frame, N1, T).
 arguments(_, _, []).
 
+/*
+* qualify(+Goal, -QualifiedGoal)
+*
+* True if the second argument is the first argument with the module written before it, as syntax Module:Goal.
+* The predicate succeeds if Goal was already attributed, in which case QualifiedGoal and Goal are equal.
+* 
+* Goal : Initial goal (with or without module).
+* QualifiedGoal : Final goal (with module).
+* 
+*/
 qualify(Goal, Goal) :-
     functor(Goal, :, 2), !.
 qualify(Goal, Module:Goal) :-
     context_module(Module).
+
+/*
+* output_clause_location(+Head, +Frame)
+*
+* Prints the location of a given Head clause.
+* 
+* @param Head : Head clause.
+* @param Frame : Optional argument, prints the stack frame if present.
+*/
 
 output_clause_location(Head, Frame) :-
     qualify(Head, QHead),
@@ -199,6 +235,12 @@ output_clause_location(Head, Frame) :-
     ).
 output_clause_location(_, _).
 
+/*
+* dict_json(?Dict, ?Json)
+*
+* Converts a dictionary to a Json object and vice-versa.
+*
+*/
 dict_json(Dict, Json) :-
     is_dict(Dict), !,
     atom_json_dict(Text, Dict, []),
@@ -207,16 +249,23 @@ dict_json(Dict, Json) :-
 dict_json(Dict, Json) :-
     atom_json_dict(Json, Dict, []).
 
-output_stack_frame(FrameId,
-                               Level,
-                               FrameName,
-                               File,
-                               Line,
-                               Column) :-
+/*
+* output_stack_frame(+FrameId, +Level, +FrameName, +File, +Line, +Column)
+*
+* Prints out the given parameters.
+*/
+
+output_stack_frame(FrameId, Level, FrameName, File, Line, Column) :-
     Response=_{response:_{frame:_{column:Column, file:File, id:FrameId, level:Level, line:Line, name:FrameName}}},
     nb_setval(frame, Response.response.frame),
     dict_json(Response, NoSpc),
     format('~n~w~n', NoSpc).
+
+/*
+* frame_attrs(+Frame, -Attrs)
+*
+* True if Attrs is an object containing the goal, id, level and pi of Frame.
+*/
 
 frame_attrs(Frame, Attrs) :-
     prolog_frame_attribute(Frame, goal, Goal1),
@@ -230,13 +279,11 @@ frame_attrs(Frame, Attrs) :-
     % gen_frame_id(FrameId),
     Attrs=_{goal:Goal, id:Frame, level:Level, pi:PIA}.
 
-hide_children_frame(Frame) :-
-    prolog_frame_attribute(Frame, goal, Goal),
-    (   predicate_property(Goal, nodebug)
-    ->  true
-    ;   predicate_property(Goal, foreign)
-    ).
-
+/*
+* trace_parent(+Level, +Start, +Child, -GParent, -ClauseRef, -PC)
+*
+* True if GParent is the parent predicate to Child.
+*/
 
 trace_parent(Level, Start, Start, Parent, ClauseRef, PC) :-
     Level>0,
@@ -249,7 +296,20 @@ trace_parent(Level, Start, Child, GParent, ClauseRef, PC) :-
     prolog_frame_attribute(Start, parent, Parent),
     Next is Level-1,
     trace_parent(Next, Parent, Child, GParent, ClauseRef, PC).
-    
+
+hide_children_frame(Frame) :-
+    prolog_frame_attribute(Frame, goal, Goal),
+    (   predicate_property(Goal, nodebug)
+    ->  true
+    ;   predicate_property(Goal, foreign)
+    ).
+
+/**
+* locate_source(+Frame : frame).
+*
+* Print information about the frame (ID, level, PI...) as well as the parent clause and 
+*  
+*/
 
 locate_source(Frame) :-
     prolog_frame_attribute(Frame, level, Level),
@@ -269,93 +329,62 @@ locate_source(Frame) :-
                        File,
                        Line,
                        Column).
-find_file_chars(File) :-
-    file_chars_computed(File), !.
-find_file_chars(File) :-
-    retractall(file_chars(File, _)),
-    retractall(subterm_pos(File, _, _, _)),
-    retractall(clause_handled(File, _)),
-    read_file_to_codes(File, Codes, [encoding(utf8)]),
-    string_codes(String, Codes),
-    string_chars(String, Chars),
-    assert(file_chars(File, Chars)),
-    assert(file_chars_computed(File)).
+
+/**
+* from_char_to_line_char(+File : string, +CharA : integer, +Line : integer, -StartChar : integer).
+*
+* Succeeds if the global index CharA corresponds to the same character as the index StartChar from the line Line. 
+*
+* @param File The file.
+* @param CharA The global index of the character.
+* @param Line The index of the line.
+* @param StartChar The index of the character within the line.
+*/
+from_char_to_line_char(File, CharA, Line, StartChar) :-
+    load_source_file(File),
+    file_line_start_end(File, Line, Start, End),
+    CharA>=Start,
+    CharA<End, !,
+    StartChar is CharA-Start.
 
 
-
-chars_string(File, From, To, String) :-
-    file_chars(File, Chars),
-    sub_chars(Chars, From, To, Subs),
-    string_chars(String, Subs).
-
-sub_chars(_, To, To, []) :- !.
-sub_chars(Chars, From, To, [H|T]) :-
-    nth0(From, Chars, H),
-    Next is From+1,
-    sub_chars(Chars, Next, To, T).
-
-
-
+/**
+* strip_subterm(+File : string, +ClauseRef : any, +SubTerms : term).
+*
+* Asserts clauses subterm_pos/4 for a given Prolog expression.
+*
+* @param File The file.
+* @param ClauseRef Name of the clause.
+* @param SubTerms Either a prenthses_term_position/3 or a term_position/5 term.
+*/
 strip_subterm(File, ClauseRef, _) :-
-    clause_handled(File, ClauseRef). 
+    clause_handled(File, ClauseRef).
 strip_subterm(File, ClauseRef, SubTerms) :-
     assert_subterm(File, ClauseRef, SubTerms),
     assert(clause_handled(File, ClauseRef)).
      
-assert_subterm(File,
-                           ClauseRef,
-                           parentheses_term_position(_, _, Subs)) :-
+assert_subterm(File, ClauseRef, parentheses_term_position(_, _, Subs)) :-
     assert_subterm(File, ClauseRef, Subs), !.
-assert_subterm(File,
-                           ClauseRef,
-                           term_position(_,
-                                         _,
-                                         FFrom,
-                                         FTo,
-                                         [L, R])) :-
+assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [L, R])) :-
     chars_string(File, FFrom, FTo, ","),
     assert_subterm(File, ClauseRef, L),
     assert_subterm(File, ClauseRef, R), !.
-assert_subterm(File,
-                           ClauseRef,
-                           term_position(_,
-                                         _,
-                                         FFrom,
-                                         FTo,
-                                         [L, R])) :-
+assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [L, R])) :-
     chars_string(File, FFrom, FTo, ";"),
     assert_subterm(File, ClauseRef, L),
     assert_subterm(File, ClauseRef, R), !.
-assert_subterm(File,
-                           ClauseRef,
-                           term_position(_,
-                                         _,
-                                         FFrom,
-                                         FTo,
-                                         [H|T])) :-
+assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [H|T])) :-
     chars_string(File, FFrom, FTo, "->"),
     assert_subterm(File, ClauseRef, H),
     assert_subterm(File, ClauseRef, T), !.
-assert_subterm(File,
-                           ClauseRef,
-                           term_position(_,
-                                         _,
-                                         FFrom,
-                                         FTo,
-                                         [H, B])) :-
+assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [H, B])) :-
     chars_string(File, FFrom, FTo, ":-"),
     assert_subterm(File, ClauseRef, H),
     assert_subterm(File, ClauseRef, B), !.
 assert_subterm(File, ClauseRef, [H|T]) :-
     assert_subterm(File, ClauseRef, H),
-    assert_subterm(File, ClauseRef, T), !.    
-assert_subterm(File,
-                           ClauseRef,
-                           term_position(From,
-                                         To,
-                                         _,
-                                         _,
-                                         Subs)) :-
+    assert_subterm(File, ClauseRef, T), !.
+assert_subterm(File, ClauseRef, term_position(From, To, _, _, Subs)) :-
     assert_subterm(File, ClauseRef, From, To),
     assert_subterm(File, ClauseRef, Subs), !.
 assert_subterm(_, _, _).
@@ -369,6 +398,22 @@ del_spaces(Str, NoSpc) :-
     split_string(Str, ' ', '\n\t ', Subs),
     atomic_list_concat(Subs, NoSpc).
 
+chars_string(File, From, To, String) :-
+    file_chars(File, Chars),
+    sub_chars(Chars, From, To, Subs),
+    string_chars(String, Subs).
+
+sub_chars(_, To, To, []) :- !.
+sub_chars(Chars, From, To, [H|T]) :-
+    nth0(From, Chars, H),
+    Next is From+1,
+    sub_chars(Chars, Next, To, T).
+
+/**
+* locate_from_term_position(+PFrame : string, +PCRef : any, -Goal : term, +CharA: integer).
+*
+* True if CharA is the position of the subterm for Goal.
+*/
 locate_from_term_position(PFrame, PCRef, Goal, CharA) :-
     term_variables(Goal, GVarList),
     clause_info(PCRef, File, SubTermPos, Vars),
@@ -381,20 +426,26 @@ locate_from_term_position(PFrame, PCRef, Goal, CharA) :-
     term_string(Goal, GoalStr, [variable_names(Vars1)]),
     exclude(nonvar_var, Vars1, VarNames), !.
 
+find_file_chars(File) :-
+    file_chars_computed(File), !.
+find_file_chars(File) :-
+    retractall(file_chars(File, _)),
+    retractall(subterm_pos(File, _, _, _)),
+    retractall(clause_handled(File, _)),
+    read_file_to_codes(File, Codes, [encoding(utf8)]),
+    string_codes(String, Codes),
+    string_chars(String, Chars),
+    assert(file_chars(File, Chars)),
+    assert(file_chars_computed(File)).
+
 nonvar_var(_=V) :-
     nonvar(V).
-goal_var_names([H|T],
-                           Vars,
-                           Args,
-                           [NVar|VT]) :-
+goal_var_names([H|T], Vars, Args, [NVar|VT]) :-
     goal_var_name(H, Vars, Args, NVar),
     goal_var_names(T, Vars, Args, VT).
 goal_var_names([], _, _, []).
 
-goal_var_name(Var,
-                          [VH|_],
-                          [AH|_],
-                          VH=AH) :-
+goal_var_name(Var, [VH|_], [AH|_], VH=AH) :-
     Var==AH, !.
 goal_var_name(Var, [_|VT], [_|AT], NVar) :-
     goal_var_name(Var, VT, AT, NVar).
@@ -412,6 +463,14 @@ goal_var_name(Var, [_|VT], [_|AT], NVar) :-
 %     from_char_to_line_char(F, CharA, Line, Ch),
 %     writeln(location:Line:Ch).
 
+/*
+* print_properties(+Frame, +List : list)
+* 
+* Print multiple properties of a frame.
+* @param Frame : the frame.
+* @param List : the list of attributes.
+*/
+
 print_properties(Frame, [H|T]) :-
     catch(( prolog_frame_attribute(Frame, H, Value),
             writeln(H:Value)
@@ -420,6 +479,12 @@ print_properties(Frame, [H|T]) :-
           true),
     print_properties(Frame, T).
 print_properties(_, []).
+
+/*
+* output_bindings(+ParentFrame, +ParentClauseRef)
+* 
+* Prints the bindings from frame arguments to variable allocations.
+*/
 
 output_bindings(ParentFrame, ParentClauseRef) :-
     frame_arguments(ParentFrame, Args),
@@ -431,9 +496,7 @@ output_bindings(ParentFrame, ParentClauseRef) :-
 frame_bindings([_|AT], [Var|VT], Bound) :-
     Var=='_', !,
     frame_bindings(AT, VT, Bound).
-frame_bindings([Arg|AT],
-                           [Var|VT],
-                           [Var=Bound|BT]) :-
+frame_bindings([Arg|AT], [Var|VT], [Var=Bound|BT]) :-
     Var\=='_',
     (   var(Arg)
     ->  Bound='_'
@@ -450,14 +513,17 @@ output_bound_vars(Bound) :-
     dict_json(Response, ResStr),
     format('~n~w~n', ResStr).
 
-convert_bound([Name=Val|NT],
-                          [_{name:Name, value:'_'}|CT],
-                          GivenVars) :-
+/*
+* convert_bound(+Associations : list, ?Dicts : list, -GivenVars : string)
+*
+* True if GivenVars holds the code to make all associations writtent in Associations.
+*
+*/
+
+convert_bound([Name=Val|NT], [_{name:Name, value:'_'}|CT], GivenVars) :-
     Val=='_', !,
     convert_bound(NT, CT, GivenVars).
-convert_bound([Name=Val|NT],
-                          [_{name:Name, value:Val1}|CT],
-                          GivenVars) :-
+convert_bound([Name=Val|NT], [_{name:Name, value:Val1}|CT], GivenVars) :-
     term_to_atom(Val, Val1),
     (   number(Val)
     ->  atomic_list_concat([Name, ' is ', Val], Given1)
@@ -472,6 +538,19 @@ clause_position(PC) :-
 clause_position(exit).
 clause_position(unify).
 clause_position(choice(_)).
+
+/**
+* subgoal_position(+ClauseRef, +Port, +File, -CharA, -CharZ).
+* 
+* True if CharA and CharZ denote the beginning and end positions in characters of the specified subgoal.
+* 
+* @param ClauseRef : Reference to the clause in question.
+* @param Port : Port.
+* @param File : The file in which to search for the clause.
+* @param CharA : Position of the beginning character of the clause.
+* @param CharZ : Position of the end character of the clause.
+* 
+*/
 
 subgoal_position(ClauseRef, unify, File, CharA, CharZ) :- !,
     clause_info(ClauseRef, File, TPos, _),
@@ -518,35 +597,36 @@ clause_end(ClauseRef, File, CharA, CharZ) :-
 head_pos(Ref, Pos, HPos) :-
     clause_property(Ref, fact), !,
     HPos=Pos.
-head_pos(_,
-                     term_position(_,
-                                   _,
-                                   _,
-                                   _,
-                                   [HPos, _]),
-                     HPos).
+head_pos(_, term_position(_, _, _, _, [HPos, _]), HPos).
+
+/*
+* find_subgoal(List, Term, Pos)
+*
+* ???
+*/
 
 find_subgoal(_, Pos, Pos) :-
     var(Pos), !.
-find_subgoal([A|T],
-                         term_position(_,
-                                       _,
-                                       _,
-                                       _,
-                                       PosL),
-                         SPos) :-
+find_subgoal([A|T], term_position(_, _, _, _, PosL), SPos) :-
     nth1(A, PosL, Pos), !,
     find_subgoal(T, Pos, SPos).
-find_subgoal([1|T],
-                         brace_term_position(_, _, Pos),
-                         SPos) :- !,
+find_subgoal([1|T], brace_term_position(_, _, Pos), SPos) :- !,
     find_subgoal(T, Pos, SPos).
-find_subgoal(List,
-                         parentheses_term_position(_, _, Pos),
-                         SPos) :- !,
+find_subgoal(List, parentheses_term_position(_, _, Pos), SPos) :- !,
     find_subgoal(List, Pos, SPos).
 find_subgoal(_, Pos, Pos).
 
+/**
+* setup_file_lines_chars(+File : string).
+*
+* Generates terms file_lines_computed/1 to indicate the lines were computed,
+*   file_line_start_end/4 that link a File and a line number to the indexes of start and end,
+*   and file_lines/2 that link a File to its lines.
+*
+* @param File The file.
+* @param Lines The list of lines.
+* @param N The index of the first line being processed.
+*/
 setup_file_lines_chars(File) :-
     file_lines_computed(File), !.
 setup_file_lines_chars(File) :-
@@ -562,6 +642,15 @@ setup_file_lines_chars(File) :-
     assert_all_lines(File, Lengths, 2),
     assert(file_lines_computed(File)), !.
 
+/**
+* assert_all_lines(+File : string, +Lines : list, -N : integer).
+*
+* Generates terms file_line_start_end/4 that link a File and a line number to the indexes of start and end.
+*
+* @param File The file.
+* @param Lines The list of lines.
+* @param N The index of the first line being processed.
+*/
 assert_all_lines(File, [H|T], N) :-
     Last is N-1,
     file_line_start_end(File, Last, _, LastEnd),
@@ -572,12 +661,18 @@ assert_all_lines(File, [H|T], N) :-
     assert_all_lines(File, T, Next).
 assert_all_lines(_, [], _).
 
-from_char_to_line_char(File, CharA, Line, StartChar) :-
-    load_source_file(File),
-    file_line_start_end(File, Line, Start, End),
-    CharA>=Start,
-    CharA<End, !,
-    StartChar is CharA-Start.
+
+/*
+
+USAGE UNKNOWN
+
+*/
+
+/*
+* get_term_from_pc(+ClauseRef, +PC, -TermTxt, -Term, -Binding)
+*
+* Gets terms, term texts and bindings from a clause reference and its PC.
+*/
 
 get_term_from_pc(ClauseRef, PC, TermTxt, Term, Binding) :-
     subgoal_position(ClauseRef, PC, File, CharA, CharZ),
@@ -591,15 +686,30 @@ get_term_from_pc(ClauseRef, PC, TermTxt, Term, Binding) :-
     ;   Term=Term1
     ).
 
+/**
+* get_term_text(+File : string, +LineA : integer, +CharA : integer, +LineZ : integer, -Text : string).
+*
+* Succeeds if Text is the text from file File, starting at line LineA and position CharA and ending at line LineZ and position CharZ. 
+*
+* @param File The file.
+* @param LineA The index of the first line.
+* @param CharA The index of the first character in the first line.
+* @param LineZ The index of the last line.
+* @param CharZ The index of the last character in the last line.
+* @param Text The desired text.
+*/
+% Loading the source file if it hasn't been done before.
 get_term_text(File, _, _, _, _, _) :-
     \+ file_lines(File, _),
     load_source_file(File),
     fail.
+% Simplified predicate to get the text if it is in a single line.
 get_term_text(File, Line, CharA, Line, CharZ, Text) :-
     file_lines(File, Lines),
     nth1(Line, Lines, String),
     Length is CharZ-CharA,
     sub_string(String, CharA, Length, _, Text), !.
+% General predicate.
 get_term_text(File, LineA, CharA, LineZ, CharZ, Text) :-
     file_lines(File, Lines),
     nth1(LineA, Lines, String),
@@ -607,11 +717,25 @@ get_term_text(File, LineA, CharA, LineZ, CharZ, Text) :-
     LineB is LineA+1,
     merge_lines(Lines, LineB, LineZ, CharZ, SubStrA, Text).
 
+/**
+* merge_lines(+Lines : list, +Line : integer, +LineZ : integer, +CharZ : integer, +SubStr : string, -Text : string).
+*
+* Succeeds if Text is a concatenation of all lines in Lines from the Line-th index at position 0 to the LineZ-th line at position CharZ.
+*
+* @param Lines The text to be merged. 
+* @param Line The index of the first line.
+* @param LineZ The total amount of lines.
+* @param CharZ The merge limit index in the last line.
+* @param SubStr Some preexisting text to be appended to make Text.
+* @param Text The merged text
+*/
+% This part handles the last line
 merge_lines(Lines, LineZ, LineZ, CharZ, SubStr, Text) :-
     nth1(LineZ, Lines, String),
     sub_string(String, 0, CharZ, _, SubStrZ1),
     split_string(SubStrZ1, "", " \t\n", [SubStrZ]),
     string_concat(SubStr, SubStrZ, Text), !.
+% This part handles every line from the first one until the second to last one.
 merge_lines(Lines, Line, LineZ, CharZ, SubStr, Text) :-
     nth1(Line, Lines, String1),
     split_string(String1, "", " \t\n", [String]),
