@@ -38,7 +38,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * Based on sublimeprolog
   * Builtin pattern support
 
-  ![syntax](images\syntaxhighlighting.png)
+  ![syntax](images/syntaxhighlighting.png)
 
 ### Predicate snippets
 
