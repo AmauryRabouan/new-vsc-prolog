@@ -1,14 +1,13 @@
-# VSC-Prolog
+# New-VSC-Prolog
 
-A VS Code extension which provides language support for Prolog (mainly for SWI-Prolog and some features for ECLiPSe).
+A VS Code extension which provides language support for Prolog (mainly for SWI-Prolog and some features for ECLiPSe). An improvement on Arthur Wang's previous [VSC-Prolog](https://marketplace.visualstudio.com/items?itemName=arthurwang.vsc-prolog) extension.
 
 ___________________
   [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/arthwang/vsc-prolog/issues) 
 
 ## Note before installation
 
-This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2***, ***ECLiPSe 6.1*** and ***VS Code 1.15*** on ***Debian 9.0*** (stretch).  It's tested under Windows 10 but not other environments.
-  * Please update to 7.5.13 of swipl if you want to use 'Show all references' feature.
+This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 9.0.4***, ***ECLiPSe 6.1*** and ***VS Code 1.86*** on ***Debian 9.0*** (stretch).  It's tested under Windows 11 but not other environments.
   * For Windows users: Run VS Code as administrator if going to switch to ECLiPSe from default SWI-Prolog or back to SWI from ECLiPSe. Non-administrator is ok while remain using the same dialect as last time.
 
 ## Features
@@ -24,8 +23,8 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * [Load active source file and query goals](#load-active-source-file-and-query-goals)
   * [Goto definition of predicate under cursor](#go-to-definition)
   * [Show all refences of predicate under cursor](#show-all-references-of-predicate-under-cursor)
-  * [Refactor predicate under cursor(experimental](#refactor-predicate-under-cursor)
-  * [Code formatter (Linux os only)](#code-formatter)
+  * [Refactor predicate under cursor(experimental)](#refactor-predicate-under-cursor)
+  * [Code formatter](#code-formatter)
   * [Debugger(experimental, SWI ONLY)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
     * Breakpoints, including conditional breakpoints and hit count breakpoints
@@ -39,12 +38,13 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * Based on sublimeprolog
   * Builtin pattern support
 
-  ![syntax](images/syntax.gif)
+  ![syntax](images\syntaxhighlighting.png)
 
 ### Predicate snippets
 
   * Predicate templates auto-completion
   * Produced from source files with structured comments and html document of swipl system
+  * Produced from created predicates
 
   ![snippet](images/snippets.gif)
 
