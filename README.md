@@ -332,8 +332,8 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
   [Pull requests](https://github.com/AmauryRabouan/new-vsc-prolog/pulls) are welcome.
 
 ## Acknowledgements
-  Created by Amaury Rabouan [linkedin](https://www.linkedin.com/in/amauryrabouan/?locale=en_US) and Guillaum Nollet [linkedin](https://www.linkedin.com/in/guillaume-nollet/)
-  Thanks to Arthur Wang for creating the VSC-Prolog extension which served as a basis for creating this extension.
+  Created by [Amaury Rabouan](https://www.linkedin.com/in/amauryrabouan/?locale=en_US) and [Guillaume Nollet](https://www.linkedin.com/in/guillaume-nollet/)<br />
+  Thanks to Arthur Wang for creating the VSC-Prolog extension which served as a basis for creating this extension.<br />
   Thanks to our school ([ESIEA](https://www.esiea.fr/en/)) for making this project possible.
 
 ## License
