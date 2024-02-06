@@ -77,12 +77,13 @@ export default class PrologLinter implements CodeActionProvider {
       this
     );
     // facilitate the process of exporting a predicate, making it visible to other Prolog modules
+    /*
     this.commandExportPredicateId = "prolog.exportPredicate";
     this.commandExportPredicate = commands.registerCommand(
       this.commandExportPredicateId,
       this.exportPredicateUnderCursor,
       this
-    );
+    );*/
     // Get configuration settings from VS Code
     this.enableOutput = workspace.getConfiguration("prolog")
       .get<boolean>("linter.enableMsgInOutput");
@@ -686,6 +687,7 @@ export default class PrologLinter implements CodeActionProvider {
   }
 
   // Method to export a predicate under the cursor
+  /*
   public exportPredicateUnderCursor() {
     // Check if the dialect is ECL, as the export helper only works for SWI-Prolog
     if (Utils.DIALECT === "ecl") {
@@ -802,7 +804,7 @@ export default class PrologLinter implements CodeActionProvider {
         );
         workspace.applyEdit(edit);
       });
-  }
+  }*/
 
   // Cleanup method to dispose of resources when the extension is deactivated
   public dispose(): void {

@@ -3,7 +3,7 @@
 A VS Code extension which provides language support for Prolog (mainly for SWI-Prolog and some features for ECLiPSe). An improvement on Arthur Wang's previous [VSC-Prolog](https://marketplace.visualstudio.com/items?itemName=arthurwang.vsc-prolog) extension.
 
 ___________________
-  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/arthwang/vsc-prolog/issues) 
+  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/AmauryRabouan/new-vsc-prolog/issues) 
 
 ## Note before installation
 
@@ -63,7 +63,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     * Prolog: Goto previous error line (default map to shift-f8)
   * Linter can be configured as action upon saving, typing and disabled by setting prolog.linter.run to 'onSave', 'onType' and 'never' respectively
     
-  ![linter](images/linter.gif)
 
 ### Edit helpers
 
@@ -72,15 +71,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
   Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb in the left margin besides the line number. A suggesition list is presented when you click the bulb that includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it could be exported from some module(s). Triggering 'Add dynamic' inserts the predicate indicator into dynamic directive, or creates such a directive if no one exists. 'Add use_module' inserts ':- use_module' directive with the predicate indicator whithin the import list.
 
-  ![import](images/import.gif)
-
-#### Export helper
-
-  > This feature only works in SWI-Prolog.
-
-  Move cursor to the head of a clause or a fact to be exported and trigger the command 'Prolog: export predicate under cursor' via command palette or right click the predicate to pop up the Editor/context menu which contains the command. Then VSC-Prolog inserts :- module/2 if module is not defined or adds the predicate indicator to the export list otherwise. After that a message box displays that asks for if adding structured comment for the predicate and comment lines are inserted above the head of the clause if 'yes' chosen, you should edit the comments of course.
-
- ![export](images/export.gif)
+  ![linter](images/linter.gif)
 
 #### Recursion helper
 
@@ -131,10 +122,8 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   
   > This feature only works on linux system.
 
-  Code formatting is implemented by calling portray_clause, so the beautification style is depended on portray_clause. Thus some limits should be mentioned.
-  * Terms with any grammar errors are not formatted
-  * Terms with singleton variables, including named anonymous variables are not formatted, since portray_clause outputs all singletons as anonymous variables resulting in user's intention alteration.
-  * portray_clause/1 transpiles or expands some times terms to different lexical literals. Just set the configuration 'prolog.format.enabled' to 'false' if it is not what you expect.
+  Code formatting is iterative on all clauses, removing unnecessary spaces and adding new ones. It returns to the line by adding the number of tabs corresponding to the number of paratheses and braces.
+
 
   VSC-Prolog formats codes for three scopes of active document in editor:
    * document scope
@@ -144,10 +133,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * selection scope
 
     Select an range and right click on the selection to pop up editor context menu, then trigger the command 'Format Selection' (default map to ctrl+k ctrl+f). VSC-Prolog would enlarge the selection to include complete terms if necessary and format the selection.
-
-  * clause scope
-
-    VSC-Prolog formats the current clause or fact when the user types the end dot charater.
 
     ![format](images/format.gif)
 ### Debugger
@@ -167,7 +152,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
 * Breakpoints
 
-  Before starting debugging, left click the editor margin on left of line number to toggle breakpoints. On debugging, the prolog process verifies the breakpoints and marks unverified ones with grey color.
+  Before starting debugging, left click the editor margin on left of line number to toggle breakpoints. On debugging, the prolog process verifies the breakpoints and marks unverified ones with grey color. (Not working for now)
   > Note the limit of VSC-Prolog: Breakpoints must be set before starting debugging. Any breakpoints set during debugging are unavailable until next debugging process.
 
   ![breakpoints](images/breakpoints.gif)
@@ -329,11 +314,7 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
   * The debugger doesn't support clp(constraint logic programming).
 
-  * Formatting doesn't work when there are any syntax errors in the scope to be formatted.
-
-  * Formatting for swi doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
-
-  * Formatting for ECLiPSe would remove line comments after invalid terms of the lines. 
+  * Formatting for ECLiPSe might not work (not tested). 
 
   * During debug tracing, prompt for stdin input doesn't display in debug console. 
 
@@ -344,15 +325,16 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
 ## Bug reporting
 
-  Feel free to report bugs or suggestions via [issues](https://github.com/arthwang/vsc-prolog/issues)
+  Feel free to report bugs or suggestions via [issues](https://github.com/AmauryRabouan/new-vsc-prolog/issues)
 
 ## Contributions
 
-  [Pull requests](https://github.com/arthwang/vsc-prolog/pulls) are welcome.
+  [Pull requests](https://github.com/AmauryRabouan/new-vsc-prolog/pulls) are welcome.
 
 ## Acknowledgements
-
-  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc. The backend of 'find all references' and 'refactor predicate under cursor' mainly comes from gist code of github of Jan Wielemaker. I thank Joachim Schimpf for his help in supporting for ECLiPe clp.
+  Created by Amaury Rabouan [linkedin](https://www.linkedin.com/in/amauryrabouan/?locale=en_US) and Guillaum Nollet [linkedin](https://www.linkedin.com/in/guillaume-nollet/)
+  Thanks to Arthur Wang for creating the VSC-Prolog extension which served as a basis for creating this extension.
+  Thanks to our school ([ESIEA](https://www.esiea.fr/en/)) for making this project possible.
 
 ## License
 

@@ -53,7 +53,7 @@ interface ISourceLineLocations {
 export class PrologDebugger extends EventEmitter {
   private _prologProc = null;
   // private _traceCmds: ITraceCmds;
-  // private _breakpoints: IBreakPoint[] = [];
+  private _breakpoints: IBreakPoint[] = [];
   private _launchRequestArguments: LaunchRequestArguments;
   private _debugSession: PrologDebugSession;
   private _bpResponse: DebugProtocol.SetBreakpointsResponse;

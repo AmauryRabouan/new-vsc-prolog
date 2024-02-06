@@ -194,6 +194,12 @@ export async function activate(context: ExtensionContext) {
   
   // file formating provider
   context.subscriptions.push(
+    languages.registerDocumentRangeFormattingEditProvider(
+      PROLOG_MODE,
+      new PrologFormatter()
+    )
+  );
+  context.subscriptions.push(
     languages.registerDocumentFormattingEditProvider(PROLOG_MODE, new PrologFormatter())
   );
 

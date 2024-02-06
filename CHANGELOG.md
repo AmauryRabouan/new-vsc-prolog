@@ -1,4 +1,8 @@
 # Changelog
+## [1.0.29]
+* Fork from VSC-Prolog, most of the bugs caused by new vscode versions have been fixed.
+* Automatic snippet for created predicates.
+
 
 ## [0.8.23]
 * fixed some bugs

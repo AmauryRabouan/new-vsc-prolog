@@ -21,7 +21,9 @@
         "debug",
         "linter",
         "snippet",
-        "format"
+        "format",
+        "syntax",
+        "color"
     ],
     "author": {
         "name": "Arthur Wang",
@@ -41,10 +43,10 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/AmauryRabouan/vsc-prolog-1.git"
+        "url": "https://github.com/AmauryRabouan/new-vsc-prolog"
     },
     "bugs": {
-        "url": "https://github.com/AmauryRabouan/vsc-prolog-1/issues"
+        "url": "https://github.com/AmauryRabouan/new-vsc-prolog/issues"
     },
     "main": "./out/pub/extension.js",
     "activationEvents": [
@@ -91,10 +93,6 @@
                 "title": "Prolog: Goto previous error line"
             },
             {
-                "command": "prolog.exportPredicate",
-                "title": "Prolog: export predicate under cursor"
-            },
-            {
                 "command": "prolog.load.document",
                 "title": "Prolog: load document"
             },
@@ -117,10 +115,6 @@
                 "key": "shift+f8"
             },
             {
-                "command": "prolog.exportPredicate",
-                "key": "alt+x x"
-            },
-            {
                 "command": "prolog.load.document",
                 "key": "alt+x l"
             },
@@ -137,10 +131,6 @@
                 },
                 {
                     "command": "prolog.query.goal",
-                    "when": "resourceLangId == prolog"
-                },
-                {
-                    "command": "prolog.exportPredicate",
                     "when": "resourceLangId == prolog"
                 },
                 {
@@ -163,15 +153,15 @@
                 }
             ]
         },
+        "breakpoints": [
+            {
+              "language": "prolog"
+            }
+        ],
         "debuggers": [
             {
                 "type": "prolog",
                 "label": "Prolog",
-                "enableBreakpointsFor": {
-                    "languageIds": [
-                        "prolog"
-                    ]
-                },
                 "program": "./out/pub/features/prologDebugSession.js",
                 "runtime": "node",
                 "configurationAttributes": {

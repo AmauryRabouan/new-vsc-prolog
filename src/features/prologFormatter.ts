@@ -4,6 +4,7 @@ import {
 languages,
 TextEdit,
 DocumentFormattingEditProvider,
+DocumentRangeFormattingEditProvider,
 TextDocument,
 FormattingOptions,
 Range,
@@ -17,7 +18,9 @@ window
 }
 from 'vscode';
 
-export class PrologFormatter implements DocumentFormattingEditProvider{
+export class PrologFormatter implements 
+DocumentRangeFormattingEditProvider,
+DocumentFormattingEditProvider{
   private _section: WorkspaceConfiguration;
   private _tabSize: number;
   private _insertSpaces: boolean;
@@ -34,6 +37,26 @@ export class PrologFormatter implements DocumentFormattingEditProvider{
     this._executable = this._section.get("executablePath", "swipl");
     this._args = [];
     this._outputChannel = window.createOutputChannel("PrologFormatter");
+  }
+  public provideDocumentRangeFormattingEdits(
+    doc: TextDocument,
+    range: Range,
+    options: FormattingOptions,
+    token: CancellationToken
+  ):  ProviderResult<TextEdit[]> {
+    let docContent = doc.getText(range); // Get the content of the document;
+    const regexp = /^\s*([a-z][a-zA-Z0-9_]*)(\(?)(?=.*(:-|=>|-->).*)/gm;// Define a regular expression for identifying Prolog clauses
+    const array = [...docContent.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
+
+    var result = [] 
+    // Iterate over each matched clause and format it
+    array.forEach((clause)=>{
+      var clauseArray = this.getClauseString(doc,clause.index+doc.offsetAt(range.start));
+      clauseArray[0] = this.formatClause(clauseArray[0]);
+      result = result.concat(TextEdit.replace(clauseArray[1],clauseArray[0]));
+    })
+    console.log(result)
+    return result;// Return the formatted result
   }
 
   // Implementation of the provideDocumentFormattingEdits method required by DocumentFormattingEditProvider
