@@ -46,7 +46,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * Produced from source files with structured comments and html document of swipl system
   * Produced from created predicates
 
-  ![snippet](images/snippets.gif)
+  ![snippet](images/Snippet.gif)
 
 ### Information hovers
   Hovers show Document information about the predicate under the mouse cursor.
