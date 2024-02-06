@@ -2,7 +2,7 @@
     "name": "new-vsc-prolog",
     "displayName": "New-VSC-Prolog",
     "description": "Support for Prolog language",
-    "version": "1.0.29",
+    "version": "1.1.0",
     "publisher": "AmauryRabouan",
     "icon": "images/vsplogo.png",
     "license": "MIT",
@@ -25,20 +25,22 @@
         "syntax",
         "color"
     ],
-    "author": {
-        "name": "Arthur Wang",
-        "email": "rthrwang@gmail.com"
-    },
-    "contributors": [
-        {
-            "name": "Phil Hargett",
-            "url": "https://github.com/hargettp"
-        },
+    "authors": [
         {
             "name": "Amaury Rabouan"
         },
         {
             "name": "Guillaume Nollet"
+        }
+    ],
+    "contributors": [
+        {
+            "name": "Arthur Wang",
+            "email": "rthrwang@gmail.com"
+        },
+        {
+            "name": "Phil Hargett",
+            "url": "https://github.com/hargettp"
         }
     ],
     "repository": {
