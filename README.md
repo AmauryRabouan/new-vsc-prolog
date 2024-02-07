@@ -119,8 +119,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   ![refactoring](images/refactoring.gif)
 
 ### Code formatter
-  
-  > This feature only works on linux system.
 
   Code formatting is iterative on all clauses, removing unnecessary spaces and adding new ones. It returns to the line by adding the number of tabs corresponding to the number of paratheses and braces.
 
