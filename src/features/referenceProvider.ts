@@ -27,23 +27,26 @@ export class PrologReferenceProvider implements ReferenceProvider {
     let pred = Utils.getPredicateUnderCursor(doc, position);
     var regex= "\\((.|\\s)*?\\)"
     const regexp = new RegExp(pred.functor+regex,"gm");
-    const regexpModule = /^\s*:-\s*use_module\(([a-z][a-zA-Z0-9_\/]*)\s*(,|\)\s*\.)/gm;// Define a regular expression for finding "use_module" declarations in the document
+    const regexpModule = /^\s*:-\s*use_module\(([a-zA-Z0-9_\/]*|(\"|\')[a-zA-Z0-9_\/\.]*(\"|\'))\s*((,\s*[\/a-zA-Z0-9\[\]]*\s*\)|\))\s*\.)/gm;// Define a regular expression for finding "use_module" declarations in the document
     const arrayModule = [...docContent.matchAll(regexpModule)]// Extract "use_module" declarations from the document
     const prolog = doc.fileName.split(".")[1]// Extract the Prolog dialect from the file extension
     const array = [...docContent.matchAll(regexp)]; // Extract occurrences of the predicate in the document
     var locations =array.map((elem)=>new Location(Uri.file(doc.fileName),doc.positionAt(elem.index)));// Create an array to store Location objects
     // Iterate through "use_module" declarations
     for(let i = 0 ; i < arrayModule.length;i++){
-        var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+arrayModule[i][1]+"."+prolog, 'utf8');// Read the content of the referenced module file
-        const array = [...text.matchAll(regexp)];// Extract occurrences of the predicate in the referenced module file
-        locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+arrayModule[i][1]+"."+prolog),findLineColForByte(text,elem.index))));// Append the new occurrences to the locations array
+      var modpath = arrayModule[i][1].replace(new RegExp("\\'","gm"),"")
+      modpath = modpath.replace(new RegExp('\\"',"gm"),"")
+      console.log(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog)
+      var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
+      const array = [...text.matchAll(regexp)];// Extract occurrences of the predicate in the referenced module file
+      locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),findLineColForByte(text,elem.index))));// Append the new occurrences to the locations array
     }
     // Return the array of Location objects
     return locations
   }
 }
 // Helper function to find line and column for a byte offset in the document
-function findLineColForByte(doc, index) {
+export function findLineColForByte(doc, index) {
   const lines = doc.split("\n");
   let totalLength = 0
   let lineStartPos = 0
