@@ -28,6 +28,7 @@ import { Utils, IPredicate } from "../utils/utils";
 // import { basename, extname, resolve } from "path";
 import * as find from "find";
 import * as path from "path";
+import * as which from 'which';
 
 // Enum for different triggers that can run the linter
 export enum RunTrigger {
@@ -554,7 +555,14 @@ export default class PrologLinter implements CodeActionProvider {
     let section = workspace.getConfiguration("prolog");
     // Check if the configuration section is available
     if (section) {
-      this.executable = path.resolve(section.get<string>("executablePath", "swipl"));// Resolve the path to the Prolog executable
+      this.executable = (() => {
+        let swipl = section.get<string>("executablePath", "swipl");
+        try {
+          return which.sync(swipl);
+        } catch (e) {
+          return path.resolve(swipl);
+        }
+      })();// Resolve the path to the Prolog executable
       // Determine the trigger type for the linter (onSave, onType, never)
       if (Utils.LINTERTRIGGER === "onSave") {
         this.trigger = RunTrigger.onSave;
