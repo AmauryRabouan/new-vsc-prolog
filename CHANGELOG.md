@@ -1,4 +1,8 @@
 # Changelog
+## [1.1.3]
+* Predicate head poping when change "." fixed
+* Add quasi quotation color highlight
+* search swipl in PATH fixed
 
 ## [1.1.2]
 * Refactor command fixed

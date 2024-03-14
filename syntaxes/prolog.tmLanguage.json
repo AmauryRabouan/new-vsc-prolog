@@ -25,6 +25,9 @@
           "include": "#comments"
         },
         {
+          "include": "#quasiquotation"
+        },
+        {
           "include": "#builtin"
         },
         {
@@ -354,6 +357,75 @@
         {
           "name": "keyword.operator.prolog",
           "match": "(\\s(is)\\s)|=:=|=\\.\\.|=?\\\\?=|\\\\\\+|@?>|@?=?<|\\+|\\*|\\-|\\#+"
+        }
+      ]
+    },
+    "quasiquotation": {
+      "patterns": [
+        {
+          "name": "meta.quasiquotation.head.prolog",
+          "begin": "({)(\\|)\\s*([a-z][a-zA-Z0-9_]*)(\\(?)(?=.*(\\|\\|).*)",
+          "beginCaptures": {
+            "2": {
+              "name": "keyword.control.element.prolog"
+            },
+            "3": {
+              "name": "support.function.created.prolog"
+            },
+            "5": {
+              "name": "keyword.control.element.prolog"
+            }
+          },
+          "end": "(\\)?)\\s*(?=\\|\\|)",
+          "endCaptures": {
+            "2": {
+              "name": "keyword.control.element.prolog"
+            }
+          },
+          "patterns": [
+            {
+              "name": "keyword.control.element.prolog",
+              "match": "{\\|"
+            },
+            {
+              "include": "#comments"
+            },
+            {
+              "include": "#variable"
+            },
+            {
+              "include": "#atom"
+            }
+          ]
+        },
+        {
+          "name": "meta.quasiquotation.body.prolog",
+          "begin": "(\\|\\|)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.element.prolog"
+            }
+          },
+          "end": "(\\s*\\|)(?=})",
+          "endCaptures": {
+            "1": {
+              "name": "keyword.control.element.prolog"
+            }
+          },
+          "patterns": [
+            {
+              "name": "variable.parameter.uppercase.prolog",
+              "match": "{\\s*[A-Z][a-zA-Z0-9_]*\\s*}"
+            },       
+            {
+              "name": "keyword.control.element.prolog",
+              "match": "\\s*\\|"
+            },
+            {
+              "name": "string.quoted.double.prolog",
+              "match": "\\S"
+            }
+          ]
         }
       ]
     },
