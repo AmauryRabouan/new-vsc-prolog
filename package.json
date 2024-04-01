@@ -2,7 +2,7 @@
     "name": "new-vsc-prolog",
     "displayName": "New-VSC-Prolog",
     "description": "Support for Prolog language",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "publisher": "AmauryRabouan",
     "icon": "images/vsplogo.png",
     "license": "MIT",
@@ -304,6 +304,11 @@
                     "default": "onType",
                     "description": "How to trigger the linter."
                 },
+                "prolog.format.addSpace": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "add a space after commas"
+                },
                 "prolog.linter.delay": {
                     "type": "number",
                     "default": 500,
@@ -318,21 +323,6 @@
                     "type": "array",
                     "description": "Arguments of Prolog executable run in terminal.",
                     "default": []
-                },
-                "prolog.format.tabSize": {
-                    "type": "number",
-                    "default": 4,
-                    "description": "The size of a tab in spaces"
-                },
-                "prolog.format.enabled": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable formatting source codes"
-                },
-                "prolog.format.insertSpaces": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Prefer spaces over tabs"
                 }
             }
         }

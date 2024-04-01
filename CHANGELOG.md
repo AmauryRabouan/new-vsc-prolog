@@ -1,4 +1,9 @@
 # Changelog
+
+## [1.1.4]
+* fixed formating with "div" "rem" "mod" "\=="
+* possibility to toggle addSpace during the formating
+
 ## [1.1.3]
 * Predicate head poping when change "." fixed
 * Add quasi quotation color highlight

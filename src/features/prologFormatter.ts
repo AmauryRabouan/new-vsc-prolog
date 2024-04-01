@@ -55,13 +55,11 @@ DocumentFormattingEditProvider{
       clauseArray[0] = this.formatClause(clauseArray[0]);
       result = result.concat(TextEdit.replace(clauseArray[1],clauseArray[0]));
     })
-    console.log(result)
     return result;// Return the formatted result
   }
 
   // Implementation of the provideDocumentFormattingEdits method required by DocumentFormattingEditProvider
   public provideDocumentFormattingEdits(document: TextDocument, _options: FormattingOptions,_token: CancellationToken): ProviderResult<TextEdit[]> {
-    
     let docContent = document.getText(); // Get the content of the document
     const regexp = /^\s*([a-z][a-zA-Z0-9_]*)(\(?)(?=.*(:-|=>|-->).*)/gm;// Define a regular expression for identifying Prolog clauses
     const array = [...docContent.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
@@ -137,7 +135,7 @@ DocumentFormattingEditProvider{
     clauseComment = result[1]
 
     //OPERATOR
-    regexp = /(?<=[\]\)}])ins|(?<=[]\)}])in|=:=|=\.\.|(?<![<>])=?\\?=|\\\+|@?>(?!=)|@?=?<(?!=)|\+|\*|\-(?!>)|\#[=><]+|\#\\=|\->|>=|<=/gm;
+    regexp = /(?<=[\]\)}])ins|(?<=[]\)}])in|=:=|=\.\.|(?<![<>])=?\\?=?=|\\\+|@?>(?!=)|@?=?<(?!=)|\+|\*|\-(?!>)|\#[=><]+|\#\\=|\->|>=|<=|mod|div|rem/gm;
     array = [...clauseComment.matchAll(regexp)];
     offset =0
     // Add spaces around operators in the clause and clauseComment
@@ -177,13 +175,17 @@ DocumentFormattingEditProvider{
     regexp = /,/gm;
     array = [...clauseComment.matchAll(regexp)];
     offset =0
-    // Add space after commas in the clause and clauseComment
-    array.forEach(comma=>{
-      clause= [clause.slice(0, comma.index+offset),comma[0]+" ", clause.slice(comma.index+comma[0].length+offset)].join('');
-      clauseComment= [clauseComment.slice(0, comma.index+offset),comma[0]+" ", clauseComment.slice(comma.index+comma[0].length+offset)].join('');
-      offset+= 1;
-    });
-    head =head.replace(regexp,", ");
+
+    if  (this._section.format.addSpace){
+       // Add space after commas in the clause and clauseComment
+      array.forEach(comma=>{
+        clause= [clause.slice(0, comma.index+offset),comma[0]+" ", clause.slice(comma.index+comma[0].length+offset)].join('');
+        clauseComment= [clauseComment.slice(0, comma.index+offset),comma[0]+" ", clauseComment.slice(comma.index+comma[0].length+offset)].join('');
+        offset+= 1;
+      });
+      head =head.replace(regexp,", ");
+    }
+   
     //REPLACE COMMENT
     regexp = /^(\s*).*(♥)/gm;
     array = [...clauseComment.matchAll(regexp)];
