@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.5]
+* fixed formating with "<>=<>"
+* Unicode support
 
 ## [1.1.4]
 * fixed formating with "div" "rem" "mod" "\=="

@@ -115,7 +115,7 @@ DocumentFormattingEditProvider{
     clauseComment = clauseComment.replace(head,"")
     head = array[0][1];
     //CONDENSATE
-    regexp = /(?<!\sis)\s(?!is\s|:-)/gm;
+    regexp = /(?<!\sis|mod|div|rem|xor|rdiv)\s(?!is\s|:-|mod|div|rem|xor|rdiv)/gm;
     array = [...clauseComment.matchAll(regexp)];
     offset =0
     // Remove unnecessary spaces in the clause and clauseComment
@@ -135,7 +135,7 @@ DocumentFormattingEditProvider{
     clauseComment = result[1]
 
     //OPERATOR
-    regexp = /(?<=[\]\)}])ins|(?<=[]\)}])in|=:=|=\.\.|(?<![<>])=?\\?=?=|\\\+|@?>(?!=)|@?=?<(?!=)|\+|\*|\-(?!>)|\#[=><]+|\#\\=|\->|>=|<=|mod|div|rem/gm;
+    regexp = /(?<=[\]\)}])ins|(?<=[]\)}])in|[-*]?->|=>|\?-|:-|=?:=|\\\+|(?:<|=|@|@=||:|>:)<|(?:\\?)(?<![><#])=(?:\.\.|@=|=|\\=|)|@?>(?:=|>|)|:|\+|-|\\\/|\/\\|#=|#>|#\\=|#<==>|#</gm;
     array = [...clauseComment.matchAll(regexp)];
     offset =0
     // Add spaces around operators in the clause and clauseComment
