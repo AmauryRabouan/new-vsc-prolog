@@ -428,4 +428,19 @@ export class Utils {
       return false;
     }
   }*/
+  // Helper function to find line and column for a byte offset in the document
+  public static findLineColForByte(doc, index) {
+  const lines = doc.split("\n");
+  let totalLength = 0
+  let lineStartPos = 0
+  // Iterate through lines to find the line and column for the byte offset
+  for (let lineNo = 0; lineNo < lines.length; lineNo++) {
+    totalLength += lines[lineNo].length + 1 // Because we removed the '\n' during split.
+    if (index < totalLength) {
+      const colNo = index - lineStartPos
+      return new Position(lineNo, colNo)
+    }
+    lineStartPos = totalLength
+  }
+  }
 }

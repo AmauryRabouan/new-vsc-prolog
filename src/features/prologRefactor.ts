@@ -16,7 +16,6 @@ import * as fs from "fs";
 import  jsesc from "jsesc";
 import { resolve } from "path";
 import * as path from "path";
-import {findLineColForByte} from "./referenceProvider"
 
 interface IClauseRefs {
   [file: string]: { [clauseLine: number]: number };
@@ -272,7 +271,7 @@ export class PrologRefactor {
       var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
       
       const array = [...text.matchAll(regexp)];// Extract occurrences of the predicate in the referenced module file
-      locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),new Range(findLineColForByte(text,elem.index),findLineColForByte(text,elem.index+elem[0].length)))));// Append the new occurrences to the locations array
+      locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),new Range(Utils.findLineColForByte(text,elem.index),Utils.findLineColForByte(text,elem.index+elem[0].length)))));// Append the new occurrences to the locations array
   }
     
     this._locations = locations;

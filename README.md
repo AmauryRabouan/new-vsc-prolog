@@ -44,9 +44,11 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
   * Predicate templates auto-completion
   * Produced from source files with structured comments and html document of swipl system
-  * Produced from created predicates
+  * Produced from created predicates, if there is structured comments from the user, it give their description (see example)
 
   ![snippet](images/Snippet.gif)
+  ![snippet](images/snippets.png)
+
 
 ### Information hovers
   Hovers show Document information about the predicate under the mouse cursor.

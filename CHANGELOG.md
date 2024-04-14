@@ -1,4 +1,8 @@
 # Changelog
+
+## [1.1.6]
+* Automatic custom predicates snippets description if structured comments
+
 ## [1.1.5]
 * fixed formating with "<>=<>"
 * Unicode support

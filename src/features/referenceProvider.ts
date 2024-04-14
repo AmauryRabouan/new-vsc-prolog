@@ -39,24 +39,9 @@ export class PrologReferenceProvider implements ReferenceProvider {
       console.log(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog)
       var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
       const array = [...text.matchAll(regexp)];// Extract occurrences of the predicate in the referenced module file
-      locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),findLineColForByte(text,elem.index))));// Append the new occurrences to the locations array
+      locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),Utils.findLineColForByte(text,elem.index))));// Append the new occurrences to the locations array
     }
     // Return the array of Location objects
     return locations
-  }
-}
-// Helper function to find line and column for a byte offset in the document
-export function findLineColForByte(doc, index) {
-  const lines = doc.split("\n");
-  let totalLength = 0
-  let lineStartPos = 0
-  // Iterate through lines to find the line and column for the byte offset
-  for (let lineNo = 0; lineNo < lines.length; lineNo++) {
-    totalLength += lines[lineNo].length + 1 // Because we removed the '\n' during split.
-    if (index < totalLength) {
-      const colNo = index - lineStartPos
-      return new Position(lineNo, colNo)
-    }
-    lineStartPos = totalLength
   }
 }

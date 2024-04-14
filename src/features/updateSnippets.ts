@@ -16,6 +16,7 @@ import {
 } from "vscode";
 import * as fs from "fs";
 import { Utils} from "../utils/utils";
+import { verify } from "crypto";
 
 
 
@@ -36,6 +37,7 @@ export class SnippetUpdater {
         // Retrieve predicates from the document and check against existing snippets
         var predicats = this._getPredicat(doc); 
         var already = [];
+        var description = [];
         // Extract existing snippets' names for comparison
         Object.keys(Utils.snippets).forEach((elem)=>{
           if(elem.includes(":")){
@@ -47,15 +49,35 @@ export class SnippetUpdater {
           }else{
             already.push(elem);
           }
+          if (Utils.snippets[elem].description.includes("\ncustom predicate\n")){
+            description.push(false);
+          }else{
+            description.push(true);
+          }
         });
         // Update snippets based on new predicates in the document
         predicats.forEach((elem)=>{
           let num = elem[1].split(",").length
           if(!already.includes(elem[0]+"/"+num.toString())){
-            Utils.snippets[elem[0]+"/"+num.toString()] = {prefix : elem[0], body:[""],
-            description:elem[0].toString()+"("+elem[1].toString()+")\ncustom predicate\n\n"
-          };
+            if(elem[2]==null){
+              Utils.snippets[elem[0]+"/"+num.toString()] = {prefix : elem[0], body:[""],
+              description:elem[0].toString()+"("+elem[1].toString()+")\ncustom predicate\n\n"};
+            }else{
+              Utils.snippets[elem[0]+"/"+num.toString()] = {prefix : elem[0], body:[""],
+              description:elem[0].toString()+"("+elem[1].toString()+")\n"+elem[2]+"\n"};
+            }
             Utils.newsnippets.push(elem);
+          }else if(elem[2]!= null){
+            delete Utils.snippets[Object.keys(Utils.snippets)[already.indexOf(elem[0]+"/"+num.toString())]]
+            Utils.snippets[elem[0]+"/"+num.toString()] = {prefix : elem[0], body:[""],
+            description:elem[0].toString()+"("+elem[1].toString()+")\n"+elem[2]+"\n"};
+            for(let i = 0; i<Utils.newsnippets.length; i++){
+              if(Utils.newsnippets[i][0]==elem[0] && Utils.newsnippets[i][1]==elem[1]){
+                Utils.newsnippets.splice(i,1);
+                Utils.newsnippets.push(elem);
+                break;
+              }
+            }
           }
         });
         // Generate predicate modules based on the updated context
@@ -66,8 +88,9 @@ export class SnippetUpdater {
   // Extracts predicates from the given TextDocument
   public _getPredicat(doc: TextDocument)  { 
       let docContent = doc.getText(); // Get the content of the document
-      const regexp = /^\s*([a-z][a-zA-Z0-9_]*)\(([a-zA-Z0-9_\-, ]*)\)(?=.*(:-|=>|-->).*)/gm;// Regular expression for matching Prolog predicates
+      const regexp = /(?:^\s*)([a-z][a-zA-Z0-9_]*)\(([a-zA-Z0-9_\-, ]*)\)(?=.*(:-|=>|-->).*)/gm;// Regular expression for matching Prolog predicates
       const regexpModule = /^\s*:-\s*use_module\(([a-z][a-zA-Z0-9_\/]*)\s*(,|\)\s*\.)/gm;// Regular expression for matching Prolog use_module directives
+      const regexpComment = /^\s*(%(?!!)|%!|\*(?!\/)|\*\/|\/\*\*)(\s*)(.*)/gm// Regular expression for matching Prolog comments
       const arrayModule = [...docContent.matchAll(regexpModule)]// Extract all use_module directives from the document
       const prolog = doc.fileName.split(".")[1]// Get the Prolog extension from the document's file name
       var predicats = [];
@@ -77,11 +100,64 @@ export class SnippetUpdater {
           var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+arrayModule[i][1]+"."+prolog, 'utf8');
            // Extract predicates from the referenced module's content
           const array2 = [...text.matchAll(regexp)]
-          predicats = predicats.concat(array2.map(function(value) { return [value[1],value[2]]; }));
+          array2.forEach((elem)=>{
+            var nbline = Utils.findLineColForByte(text,elem.index).line;
+            var lines = docContent.split("\n");
+            var verif = true;
+            var comment = "";
+            while(verif && nbline >-1){
+              var res = lines[nbline].matchAll(regexpComment).next();
+              if(res.value){
+                if(res.value[1]!="*/" ||res.value[1]!="/**"){
+                  if(comment==""){
+                    comment = res.value[3];
+                  }else if(res.value[3]!=""){
+                    comment = res.value[3]+"\n"+comment;
+                  }
+                }
+                if(res.value[1]=="%!" ||res.value[1]=="/**"){
+                  verif = false;
+                }
+                nbline = nbline-1;
+              }else{
+                comment = null;
+                verif = false;
+              }
+              
+            }
+           predicats.push([elem[1],elem[2],comment]);
+          });
       }
       // Extract predicates from the current document
       const array = [...docContent.matchAll(regexp)]
-      predicats = predicats.concat(array.map(function(value) { return [value[1],value[2]]; }));
+      // Search for definition comments
+      array.forEach((elem)=>{
+        var nbline = Utils.findLineColForByte(docContent,elem.index).line;
+        var lines = docContent.split("\n");
+        var verif = true;
+        var comment = "";
+        while(verif && nbline >-1){
+          var res = lines[nbline].matchAll(regexpComment).next();
+          if(res.value){
+            if(res.value[1]!="*/" ||res.value[1]!="/**"){
+              if(comment==""){
+                comment = res.value[3]
+              }else if(res.value[3]!=""){
+                comment = res.value[3]+"\n"+comment;
+              }
+            }
+            if(res.value[1]=="%!" ||res.value[1]=="/**"){
+              verif = false;
+            }
+            nbline = nbline-1;
+          }else{
+            comment = null;
+            verif = false;
+          }
+          
+        }
+       predicats.push([elem[1],elem[2],comment])
+      });
       // Filter out a specific predicate named "test"
       predicats = predicats.filter(function (predicat) {return predicat[0]!= "test"});
       return predicats; 
@@ -149,7 +225,11 @@ export  class PrologCompletionProvider {
       // Set documentation for the completion item
       const docs: any = new MarkdownString();
       docs.supportHtml = true;
-      docs.appendMarkdown('<span style="color:#8da9fc;">'+elem[0].toString()+'</span>('+str2+')</br>Custom predicate');
+      if(elem[2]==null){
+        docs.appendMarkdown('<span style="color:#8da9fc;">'+elem[0].toString()+'</span>('+str2+')</br>Custom predicate');
+      }else{
+        docs.appendMarkdown('<span style="color:#8da9fc;">'+elem[0].toString()+'</span>('+str2+')</br>'+elem[2].replace("\n","</br>"));
+      }
       completionItem.documentation = docs;
       completionItem.detail = elem[0]+"/"+params.length;// Set additional details for the completion item
       snippetCompletion.push(completionItem);// Add the completion item to the array
