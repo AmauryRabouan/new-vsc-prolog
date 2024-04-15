@@ -36,8 +36,12 @@ export class PrologReferenceProvider implements ReferenceProvider {
     for(let i = 0 ; i < arrayModule.length;i++){
       var modpath = arrayModule[i][1].replace(new RegExp("\\'","gm"),"")
       modpath = modpath.replace(new RegExp('\\"',"gm"),"")
-      console.log(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog)
-      var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
+      var text ="";
+      try {
+        text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"\/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
+      } catch (error) {
+         console.error("Error reading file:", error);
+      }
       const array = [...text.matchAll(regexp)];// Extract occurrences of the predicate in the referenced module file
       locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),Utils.findLineColForByte(text,elem.index))));// Append the new occurrences to the locations array
     }

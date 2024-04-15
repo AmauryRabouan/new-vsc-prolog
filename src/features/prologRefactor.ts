@@ -268,8 +268,12 @@ export class PrologRefactor {
     for(let i = 0 ; i < arrayModule.length;i++){
       var modpath = arrayModule[i][1].replace(new RegExp("\\'","gm"),"")
       modpath = modpath.replace(new RegExp('\\"',"gm"),"")
-      var text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
-      
+      var text ="";
+      try {
+        text=fs.readFileSync(workspace.workspaceFolders[0].uri.fsPath+"\/"+modpath+"."+prolog, 'utf8');// Read the content of the referenced module file
+      } catch (error) {
+         console.error("Error reading file:", error);
+      }
       const array = [...text.matchAll(regexp)];// Extract occurrences of the predicate in the referenced module file
       locations = locations.concat(array.map((elem)=>new Location(Uri.file(workspace.workspaceFolders[0].uri.fsPath+"/"+modpath+"."+prolog),new Range(Utils.findLineColForByte(text,elem.index),Utils.findLineColForByte(text,elem.index+elem[0].length)))));// Append the new occurrences to the locations array
   }

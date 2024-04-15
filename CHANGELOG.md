@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.1.7]
+* Fix readFiles
+
 ## [1.1.6]
 * Automatic custom predicates snippets description if structured comments
 
