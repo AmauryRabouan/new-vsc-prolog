@@ -18,6 +18,7 @@
     {
       "name": "Extension",
       "type": "extensionHost",
+      "preLaunchTask": "npm: package",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],

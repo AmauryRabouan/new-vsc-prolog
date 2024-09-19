@@ -129,7 +129,7 @@ export class PrologDebugger extends EventEmitter {
       // Process breakpoints response
       case "breakpoints":
         this._bpResponse.body = {
-          breakpoints: resObj.response.breakpoints
+          breakpoints: resObj.response.breakpoints.map(b => b.source = { path: b.source })
         };
         this.emit("responseBreakpoints", this._bpResponse);
         return;
