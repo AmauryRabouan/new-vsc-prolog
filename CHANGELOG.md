@@ -1,4 +1,6 @@
 # Changelog
+## [1.1.8]
+* Debugger Fix
 
 ## [1.1.7]
 * Fix readFiles
