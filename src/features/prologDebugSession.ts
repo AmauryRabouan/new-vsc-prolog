@@ -127,7 +127,7 @@ export class PrologDebugSession extends DebugSession {
     this._currentVariables = [];// Clear existing variables in _currentVariables array
     // Pop elements from the provided vars array and push them into _currentVariables
     while (vars.length > 0) {
-      this._currentVariables.push(vars.pop());
+      this._currentVariables.push({ ...vars.pop(), variablesReference: 0 });
     }
   }
 
