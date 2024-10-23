@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.9]
+* Highlight on decimal number fix
+
 ## [1.1.8]
 * Debugger Fix
 

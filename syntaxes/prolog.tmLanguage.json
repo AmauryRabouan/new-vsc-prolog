@@ -300,7 +300,7 @@
       "patterns": [
         {
           "name": "constant.numeric.integer.prolog",
-          "match": "(?<![a-zA-Z\\p{L}]|/)(\\d+|(\\d+\\.\\d+))"
+          "match": "(?<![a-zA-Z\\p{L}]|/)((\\d+\\.\\d+)|\\d+)"
         },
         {
           "name": "string.quoted.double.prolog",
