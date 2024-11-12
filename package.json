@@ -2,7 +2,7 @@
     "name": "new-vsc-prolog",
     "displayName": "New-VSC-Prolog",
     "description": "Support for Prolog language",
-    "version": "1.1.10",
+    "version": "1.1.11",
     "publisher": "AmauryRabouan",
     "icon": "images/vsplogo.png",
     "license": "MIT",
@@ -157,7 +157,7 @@
         },
         "breakpoints": [
             {
-              "language": "prolog"
+                "language": "prolog"
             }
         ],
         "debuggers": [
@@ -350,7 +350,7 @@
         "esbuild": "^0.14.54",
         "ovsx": "^0.3.0",
         "typescript": "^4.5.5",
-        "vsce": "^2.6.7"
+        "vsce": "^2.15.0"
     },
     "dependencies": {
         "@vscode/debugadapter": "^1.51.1",

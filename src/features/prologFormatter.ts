@@ -177,7 +177,7 @@ export class PrologFormatter implements
 
     //COMMAS
     if (this._section.format.addSpace) {
-      regexp = /,/gm;
+      regexp = /,(?!\s)/gm;
       array = [...clauseComment.matchAll(regexp)];
       offset = 0
       // Add space after commas in the clause and clauseComment

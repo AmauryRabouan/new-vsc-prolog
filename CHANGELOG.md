@@ -1,4 +1,8 @@
 # Changelog
+
+## [1.1.11]
+* Fix formating
+
 ## [1.1.10]
 * Improved auto formating
 
