@@ -1,5 +1,6 @@
 
 
+import { off } from 'process';
 import {
   languages,
   TextEdit,
@@ -45,28 +46,73 @@ export class PrologFormatter implements
     token: CancellationToken
   ): ProviderResult<TextEdit[]> {
     let docContent = doc.getText(range); // Get the content of the document;
-    const regexp = /^\s*([a-z][a-zA-Z0-9_]*)(?:(\(?)(?=(?:[^.]|\.[^\s])*?(:-|=>|-->).*)|(?=[^\(,\n]*?(\.\s*?$))|(?=\((?:[^.]*|\.[^\s]*?)\)\s*(\.\s*?$)))/gm;// Define a regular expression for identifying Prolog clauses
-    const array = [...docContent.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
-
+    var offset = doc.getText(new Range(doc.positionAt(0),range.start)).length;
+    var regexp = /%.*|\/\*[\w\W]*?\*\//gm; // Define regular expression for matching comments
+    var array = [...docContent.matchAll(regexp)]; // Match all occurrences of comments in the substring
+    // Replace comments with placeholder characters in the clause
+    var clauseComment = docContent;
+    array.forEach(Comment => {
+      clauseComment = clauseComment.replace(Comment[0], new Array(Comment[0].length + 1).join("☻"))
+    });
+    regexp = /^\s*([a-z][a-zA-Z0-9_]*)/gm;// Define a regular expression for identifying Prolog clauses
+    var arrayStart = [...clauseComment.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
+    regexp = /\.\s*$/gm; // Define a regular expression for identifying Prolog clauses end
+    var arrayEnd = [...clauseComment.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
+    var min = 0;
+    var clausesArray = [];
+    for (let i = 0; i < arrayStart.length; i++) {
+      if (arrayStart[i].index >= min) {
+        for (let j = 0; j < arrayEnd.length; j++) {
+          if (arrayEnd[j].index > arrayStart[i].index) {
+            min = arrayEnd[j].index;
+            clausesArray.push([arrayStart[i].index+offset, arrayEnd[j].index+offset]);
+            break;
+          }
+        }
+      }
+    }
     var result = []
     // Iterate over each matched clause and format it
-    array.forEach((clause) => {
-      var clauseArray = this.getClauseString(doc, clause.index + doc.offsetAt(range.start));
+    clausesArray.forEach((clause) => {
+      var clauseArray = this.getClauseString(doc, clause);
       clauseArray[0] = this.formatClause(clauseArray[0]);
       result = result.concat(TextEdit.replace(clauseArray[1], clauseArray[0]));
     })
+
     return result;// Return the formatted result
   }
 
   // Implementation of the provideDocumentFormattingEdits method required by DocumentFormattingEditProvider
   public provideDocumentFormattingEdits(document: TextDocument, _options: FormattingOptions, _token: CancellationToken): ProviderResult<TextEdit[]> {
     let docContent = document.getText(); // Get the content of the document
-    const regexp = /^\s*([a-z][a-zA-Z0-9_]*)(?:(\(?)(?=(?:[^.]|\.[^\s])*?(:-|=>|-->).*)|(?=[^\(,\n]*?(\.\s*?$))|(?=\((?:[^.]*|\.[^\s]*?)\)\s*(\.\s*?$)))/gm;// Define a regular expression for identifying Prolog clauses
-    const array = [...docContent.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
+    var regexp = /%.*|\/\*[\w\W]*?\*\//gm; // Define regular expression for matching comments
+    var array = [...docContent.matchAll(regexp)]; // Match all occurrences of comments in the substring
+    // Replace comments with placeholder characters in the clause
+    var clauseComment = docContent;
+    array.forEach(Comment => {
+      clauseComment = clauseComment.replace(Comment[0], new Array(Comment[0].length + 1).join("☻"))
+    });
+    regexp = /^\s*([a-z][a-zA-Z0-9_]*)/gm;// Define a regular expression for identifying Prolog clauses
+    var arrayStart = [...clauseComment.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
+    regexp = /\.\s*$/gm; // Define a regular expression for identifying Prolog clauses end
+    var arrayEnd = [...clauseComment.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
+    var min = 0;
+    var clausesArray = [];
+    for (let i = 0; i < arrayStart.length; i++) {
+      if (arrayStart[i].index >= min) {
+        for (let j = 0; j < arrayEnd.length; j++) {
+          if (arrayEnd[j].index > arrayStart[i].index) {
+            min = arrayEnd[j].index;
+            clausesArray.push([arrayStart[i].index, arrayEnd[j].index]);
+            break;
+          }
+        }
+      }
+    }
     var result = []
     // Iterate over each matched clause and format it
-    array.forEach((clause) => {
-      var clauseArray = this.getClauseString(document, clause.index);
+    clausesArray.forEach((clause) => {
+      var clauseArray = this.getClauseString(document, clause);
       clauseArray[0] = this.formatClause(clauseArray[0]);
       result = result.concat(TextEdit.replace(clauseArray[1], clauseArray[0]));
     })
@@ -75,25 +121,24 @@ export class PrologFormatter implements
   }
 
   // Helper method to get the clause string and its range from the document
-  private getClauseString(doc: TextDocument, start): [string, Range] {
+  private getClauseString(doc: TextDocument, range): [string, Range] {
     let docContent = doc.getText();
-    const sub = docContent.substring(start, docContent.length); // Extract the substring from the starting position to the end of the document
-    var regexp = /%.*/gm; // Define regular expression for matching comments
-    var array = [...sub.matchAll(regexp)]; // Match all occurrences of comments in the substring
-    // Replace comments with placeholder characters in the clause
-    var clauseComment = sub;
-    array.forEach(Comment => {
-      clauseComment = clauseComment.replace(Comment[0], new Array(Comment[0].length + 1).join("☻"))
-    });
-    regexp = /\.\s*$/gm; // Define regular expression for matching the end of a clause
-    const point = [...clauseComment.matchAll(regexp)][0];// Match the position of the end of the clause in the modified substring
-    return [docContent.substring(start, start + point.index + 1), new Range(doc.positionAt(start), doc.positionAt(start + point.index + 1))];// Return the clause string and its range
+    var sub = docContent.substring(range[0], range[1] + 1); // Extract the substring from the starting position to the end of the document
+    var regexp = /^\s*/gm; // Define regular expression for matching comments
+    var array = [...docContent.matchAll(regexp)]; // Match all occurrences of starting spaces in the substring
+    if (array.length != 0) {
+      sub = sub.slice(array[0][0].length);
+      return [sub, new Range(doc.positionAt(range[0] + array[0][0].length), doc.positionAt(range[1] + 1))];// Return the clause string and its range
+    }
+
+    return [sub, new Range(doc.positionAt(range[0]), doc.positionAt(range[1] + 1))];// Return the clause string and its range
   }
 
   // Helper method to format a Prolog clause
   private formatClause(clause: string): string {
+    console.log(clause);
     // COMMENT
-    var regexp = /%.*/gm;
+    var regexp = /%.*|\/\*[\w\W]*?\*\//gm;
     var array = [...clause.matchAll(regexp)];
     var clauseComment = clause;
     // Replace comments with placeholder characters in the clause
@@ -220,19 +265,19 @@ export class PrologFormatter implements
         offset += 1 + Comment[1].length;
       });
     });
-    if(clause != ""){
+    if (clause != "") {
       head = "\n" + head + "\n\t";
       return head + clause; // Return the formatted clause
-    }else{
+    } else {
       head = "\n" + head;
       return head; // Return the formatted clause
     }
-   
+
   }
 
   // Helper method to format nested expressions within a Prolog clause
   private formatNested(clause: string, clauseComment: string): [string, string] {
-    var regexp = new RegExp("\\[[^\\[\\]]*?\\]|\\([^\\(]*?\\)", "gm");// Define regular expression to find 0 deep expressions
+    var regexp = new RegExp("\\[[^\\[\\]]*?\\]|\\([^\\(]*?\\)|{\\|[\\w\\W]*?\\|}", "gm");// Define regular expression to find 0 deep expressions
     var array0deep = [...clauseComment.matchAll(regexp)];// Find all occurrences of 0 deep expressions 
     regexp = new RegExp(".(?=},?)|,|{|\\[", "gm");// Define regular expression to find 0 deep expressions
     var endLine = [...clauseComment.matchAll(regexp)];// Find all end line

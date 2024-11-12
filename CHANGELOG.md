@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.1.12]
+* Fix formating and highlighting
+
 ## [1.1.11]
 * Fix formating
 
