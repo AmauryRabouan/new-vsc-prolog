@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.10]
+* Improved auto formating
+
 ## [1.1.9]
 * Highlight on decimal number fix
 
