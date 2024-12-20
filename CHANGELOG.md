@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.1.13]
+* Fix formating lines spaces
+
 ## [1.1.12]
 * Fix formating and highlighting
 
