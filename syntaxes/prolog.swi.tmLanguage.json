@@ -117,12 +117,12 @@
     },
     {
       "name": "meta.clause.head.prolog",
-      "begin": "^\\s*([^\\p{Lu}\\s0-9\\W][a-zA-Z0-9_\\p{L}]*)(\\(?)(?=(?:[^.]|\\.[^\\s])*?(:-|=>).*)",
+      "begin": "^\\s*([a-z][a-zA-Z0-9_]*)(\\(?)",
       "beginCaptures": {
         "1": {
           "name": "entity.name.function.clause.prolog"
         },
-        "3": {
+        "2": {
           "name": "punctuation.definition.parameters.begin"
         }
       },
@@ -147,6 +147,9 @@
         },
         {
           "include": "#constants"
+        },
+        {
+          "include": "#comments"
         }
       ]
     },

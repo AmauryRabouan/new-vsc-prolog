@@ -98,6 +98,7 @@ export class PrologFormatter implements
     var arrayEnd = [...clauseComment.matchAll(regexp)];// Match all occurrences of Prolog clauses in the document
     var min = 0;
     var clausesArray = [];
+
     for (let i = 0; i < arrayStart.length; i++) {
       if (arrayStart[i].index >= min) {
         for (let j = 0; j < arrayEnd.length; j++) {
@@ -124,8 +125,8 @@ export class PrologFormatter implements
   private getClauseString(doc: TextDocument, range): [string, Range] {
     let docContent = doc.getText();
     var sub = docContent.substring(range[0], range[1] + 1); // Extract the substring from the starting position to the end of the document
-    var regexp = /^\s*/gm; // Define regular expression for matching comments
-    var array = [...docContent.matchAll(regexp)]; // Match all occurrences of starting spaces in the substring
+    var regexp = /^\s+/gm; // Define regular expression for matching comments
+    var array = [...sub.matchAll(regexp)]; // Match all occurrences of starting spaces in the substring
     if (array.length != 0) {
       sub = sub.slice(array[0][0].length);
       return [sub, new Range(doc.positionAt(range[0] + array[0][0].length), doc.positionAt(range[1] + 1))];// Return the clause string and its range
@@ -136,7 +137,6 @@ export class PrologFormatter implements
 
   // Helper method to format a Prolog clause
   private formatClause(clause: string): string {
-    console.log(clause);
     // COMMENT
     var regexp = /%.*|\/\*[\w\W]*?\*\//gm;
     var array = [...clause.matchAll(regexp)];
@@ -219,7 +219,6 @@ export class PrologFormatter implements
     var result = this.formatNested(clause, clauseComment);
     clause = result[0];
     clauseComment = result[1];
-
     //COMMAS
     if (this._section.format.addSpace) {
       regexp = /,(?!\s)/gm;
@@ -266,10 +265,9 @@ export class PrologFormatter implements
       });
     });
     if (clause != "") {
-      head = "\n" + head + "\n\t";
+      head = head + "\n\t";
       return head + clause; // Return the formatted clause
     } else {
-      head = "\n" + head;
       return head; // Return the formatted clause
     }
 
