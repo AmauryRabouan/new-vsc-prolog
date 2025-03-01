@@ -161,7 +161,7 @@ export class PrologFormatter implements
     clause = clause.slice(array[0].index + array[0][0].length)
     clauseComment = clauseComment.replace(headComment, "")
     //CONDENSATE
-    regexp = /(?<!\sis|mod|div|rem|xor|rdiv)\s(?!is\s|:-|mod|div|rem|xor|rdiv)/gm;
+    regexp = /(?<!\sis|mod|div|rem|xor|rdiv|in)\s(?!is\s|:-|mod|div|rem|xor|rdiv|in)/gm;
     array = [...clauseComment.matchAll(regexp)];
     offset = 0
     // Remove unnecessary spaces in the clause and clauseComment
@@ -170,7 +170,6 @@ export class PrologFormatter implements
       clauseComment = [clauseComment.slice(0, space.index + offset), clauseComment.slice(space.index + space[0].length + offset)].join('');
       offset -= space[0].length;
     });
-
     array = [...headComment.matchAll(regexp)];
     offset = 0
     array.forEach(space => {
@@ -178,6 +177,7 @@ export class PrologFormatter implements
       headComment = [headComment.slice(0, space.index + offset), headComment.slice(space.index + space[0].length + offset)].join('');
       offset -= space[0].length;
     });
+
     //OPERATOR
     regexp = /(?<=[\]\)}])ins|(?<=[]\)}])in|[-*]?->|=>|\?-|:-|=?:=|\\\+|(?:<|=|@|@=||:|>:)<|(?:\\?)(?<![><#])=(?:\.\.|@=|=|\\=|)|@?>(?:=|>|)|:|\+|-|\\\/|\/\\|#=|#>|#\\=|#<==>|#</gm;
     array = [...clauseComment.matchAll(regexp)];

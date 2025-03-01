@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.14]
+* Fix formating "in" CLPFD operator
+* Security update
 
 ## [1.1.13]
 * Fix formating lines spaces
