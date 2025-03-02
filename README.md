@@ -1,14 +1,13 @@
 # New-VSC-Prolog
 
-A VS Code extension which provides language support for Prolog (mainly for SWI-Prolog and some features for ECLiPSe). An improvement on Arthur Wang's previous [VSC-Prolog](https://marketplace.visualstudio.com/items?itemName=arthurwang.vsc-prolog) extension.
+A VS Code extension which provides language support for SWI-Prolog. An improvement on Arthur Wang's previous [VSC-Prolog](https://marketplace.visualstudio.com/items?itemName=arthurwang.vsc-prolog) extension.
 
 ___________________
   [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/AmauryRabouan/new-vsc-prolog/issues) 
 
 ## Note before installation
 
-This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 9.0.4***, ***ECLiPSe 6.1*** and ***VS Code 1.86*** on ***Debian 9.0*** (stretch).  It's tested under Windows 11 but not other environments.
-  * For Windows users: Run VS Code as administrator if going to switch to ECLiPSe from default SWI-Prolog or back to SWI from ECLiPSe. Non-administrator is ok while remain using the same dialect as last time.
+This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 9.0.4*** with ***VS Code 1.86***.  It's tested under Windows 11 but not other environments.
 
 ## Features
   * [Syntax highlighting](#syntax-highlighting)
@@ -69,7 +68,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 ### Edit helpers
 
 #### Import or Dynamic predicate helper
-  > This feature only works in SWI-Prolog.
 
   Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb in the left margin besides the line number. A suggesition list is presented when you click the bulb that includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it could be exported from some module(s). Triggering 'Add dynamic' inserts the predicate indicator into dynamic directive, or creates such a directive if no one exists. 'Add use_module' inserts ':- use_module' directive with the predicate indicator whithin the import list.
 
@@ -137,8 +135,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     ![format](images/format.gif)
 ### Debugger
 
-  > This feature only works in SWI-Prolog.
-
   The experimental debugger of VSC-Prolog tries to visualize the command line tracer of SWI-Prolog in VS Code. Read [VS Code handbook about debugging](https://code.visualstudio.com/docs/editor/debugging) for how VS Code debugging works generally.
   
   For the first time to debug in VS Code it is necessary to setup a launch.json file under .vscode directory in a project root. VS Code pops down a list of debug environments when you first click 'start debugging' button (f5) or the gear icon. The list contains 'Prolog' if VSC-Prolog extension is installed. A default launch.json file would be generated. Among the all settings, two must be set firstly: 'runtime executable' and 'startup query' according to your environment. 'runtime executable' points to your swipl executable path and 'startup query' refers to the goal you want to start debugging. ___There is only one file containing the 'startup goal' in a project.___ Refer to next section for detailed explanations about other settings.
@@ -194,7 +190,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
 ## Requirements
 
-Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
+Latest versions of VS code and SWI-Prolog installed.
 
 ## Configurations
 
@@ -203,7 +199,6 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
       What dialect of prolog used:
         * swi: SWI-Prolog
-        * ecl: ECLiPSe(eclipseclp).
 
     * "prolog.executablePath": "/usr/bin/swipl"
 
@@ -313,8 +308,6 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 ## Known Issues
 
   * The debugger doesn't support clp(constraint logic programming).
-
-  * Formatting for ECLiPSe might not work (not tested). 
 
   * During debug tracing, prompt for stdin input doesn't display in debug console. 
 

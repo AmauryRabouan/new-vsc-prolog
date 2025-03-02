@@ -1,4 +1,7 @@
 # Changelog
+## [1.1.15]
+* No longer supporting ECLiPSe
+
 ## [1.1.14]
 * Fix formating "in" CLPFD operator
 * Security update
